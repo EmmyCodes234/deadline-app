@@ -30,5 +30,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/**/*.test.tsx",
+    "src/**/*.test.ts",
+    "src/components/GothicIcon.examples.tsx",
+    "src/components/GothicIconShowcase.tsx",
+    "src/components/MigrationDashboard.tsx"
+  ]
 }
