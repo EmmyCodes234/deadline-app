@@ -1,18 +1,20 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
   Home, 
   Award, 
-  Settings, 
   User, 
   LogOut, 
   Menu, 
   X,
-  ChevronRight
+  ChevronRight,
+  PenTool
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { AuthModal } from './AuthModal';
+import { useGlitch } from '../hooks/useGlitch';
 import clsx from 'clsx';
 
 interface NavigationProps {
@@ -29,9 +31,15 @@ export function Navigation({
   className 
 }: NavigationProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
+  const { getDisplayName } = useUserProfile();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const isGlitching = useGlitch();
+  
+  // Hide user pill on profile page
+  const isProfilePage = location.pathname === '/profile';
 
   const handleSignOut = async () => {
     await signOut();
@@ -50,39 +58,57 @@ export function Navigation({
             {showBackButton ? (
               <Link
                 to={backTo}
-                className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors group"
+                className="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-all group"
+                aria-label="Return"
               >
                 <ChevronRight className="w-5 h-5 rotate-180 group-hover:-translate-x-1 transition-transform" />
-                <span className="text-sm font-medium uppercase tracking-wider">Back</span>
+                <span className="text-sm font-serif uppercase tracking-wider">Return</span>
               </Link>
             ) : (
               <Link to="/hub" className="flex items-center gap-2">
-                <Home className="w-6 h-6 text-zinc-500 hover:text-red-500 transition-colors" />
+                <Home 
+                  className="w-6 h-6 text-zinc-500 hover:text-red-500 transition-colors" 
+                  style={{
+                    filter: isGlitching ? 'invert(1) hue-rotate(180deg)' : 'none',
+                    transform: isGlitching ? 'skew(-5deg, -5deg) scale(1.1)' : 'none',
+                    transition: 'all 0.1s ease'
+                  }}
+                />
               </Link>
             )}
 
             {/* Right: User Menu */}
-            <div className="relative">
-              {user ? (
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900/50 hover:bg-zinc-800/50 border border-white/10 transition-all"
-                >
-                  <User className="w-4 h-4 text-zinc-400" />
-                  <span className="text-sm text-zinc-300 max-w-[120px] truncate hidden sm:block">
-                    {user.email?.split('@')[0] || 'VESSEL'}
-                  </span>
-                </Link>
-              ) : (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="hidden sm:inline">Sign In</span>
-                </button>
-              )}
-            </div>
+            {!isProfilePage && (
+              <div className="relative">
+                {user ? (
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900/50 hover:bg-zinc-800/50 border border-white/10 transition-all"
+                  >
+                    {isGlitching ? (
+                      <PenTool className="w-4 h-4 text-red-500 animate-pulse" />
+                    ) : (
+                      <User className="w-4 h-4 text-zinc-400" />
+                    )}
+                    <span className="text-sm text-zinc-300 max-w-[120px] truncate hidden sm:block">
+                      {getDisplayName()}
+                    </span>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    {isGlitching ? (
+                      <PenTool className="w-4 h-4 animate-pulse" />
+                    ) : (
+                      <User className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">Sign In</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -105,66 +131,80 @@ export function Navigation({
       )}>
         <div className="max-w-7xl mx-auto w-full px-8 py-6">
           <div className="flex items-center justify-between">
-            {/* Left: Home Icon */}
+            {/* Left: Return to Sanctuary */}
             <Link 
               to="/hub" 
-              className="pointer-events-auto group"
-              aria-label="Return to Hub"
+              className="pointer-events-auto group flex items-center gap-2"
+              aria-label="Return to Sanctuary"
             >
-              <Home className="w-6 h-6 text-zinc-500 hover:text-red-500 transition-colors" />
+              <PenTool 
+                className="w-6 h-6 text-neutral-200 hover:text-red-500 transition-colors" 
+                style={{
+                  filter: isGlitching ? 'invert(1) hue-rotate(180deg)' : 'none',
+                  transform: isGlitching ? 'skew(-5deg, -5deg) scale(1.1)' : 'none',
+                  transition: 'all 0.1s ease'
+                }}
+              />
+              <span 
+                className="font-serif text-lg tracking-[0.2em] text-neutral-200 group-hover:text-red-500 transition-colors hidden sm:block"
+              >
+                EPITAPH
+              </span>
             </Link>
 
             {/* Right: HUD Controls */}
-            <div className="flex items-center gap-3 pointer-events-auto">
-              {/* Vessel Badge */}
-              {user ? (
-                <div className="flex items-center gap-3 px-4 py-2 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5">
-                  <User className="w-4 h-4 text-zinc-400" />
-                  <span className="text-xs tracking-widest uppercase text-zinc-300">
-                    VESSEL: {user.email?.split('@')[0] || 'SCRIBE'}
-                  </span>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5 hover:border-red-500/30 transition-colors"
-                >
-                  <User className="w-4 h-4 text-zinc-400" />
-                  <span className="text-xs tracking-widest uppercase text-zinc-400">
-                    FORGE COVENANT
-                  </span>
-                </button>
-              )}
+            {!isProfilePage && (
+              <div className="flex items-center gap-3 pointer-events-auto">
+                {/* Vessel Badge */}
+                {user ? (
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 px-3 py-2 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5 hover:border-amber-700/30 transition-all group"
+                  >
+                    {isGlitching ? (
+                      <PenTool className="w-4 h-4 text-red-500 animate-pulse" />
+                    ) : (
+                      <User className="w-4 h-4 text-zinc-400 group-hover:text-amber-600 transition-colors" />
+                    )}
+                    <span 
+                      className="text-xs tracking-widest uppercase group-hover:opacity-100 transition-opacity"
+                      style={{ color: '#aa8844', opacity: 0.7 }}
+                    >
+                      {getDisplayName()}
+                    </span>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5 hover:border-zinc-600/30 transition-all group"
+                  >
+                    {isGlitching ? (
+                      <PenTool className="w-4 h-4 text-red-500 animate-pulse" />
+                    ) : (
+                      <User className="w-4 h-4 text-zinc-400 group-hover:text-zinc-300 transition-colors" />
+                    )}
+                    <span 
+                      className="text-xs tracking-widest uppercase group-hover:opacity-100 transition-opacity"
+                      style={{ color: '#888', opacity: 0.7 }}
+                    >
+                      SIGN IN BLOOD
+                    </span>
+                  </button>
+                )}
 
-              {/* Profile Icon */}
-              <Link
-                to="/profile"
-                className="p-2.5 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5 hover:border-blue-500/30 transition-colors group"
-                aria-label="Profile"
-              >
-                <Award className="w-5 h-5 text-zinc-400 group-hover:text-blue-400 transition-colors" />
-              </Link>
-
-              {/* Settings Icon */}
-              <Link
-                to="/settings"
-                className="p-2.5 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5 hover:border-green-500/30 transition-colors group"
-                aria-label="Settings"
-              >
-                <Settings className="w-5 h-5 text-zinc-400 group-hover:text-green-400 transition-colors" />
-              </Link>
-
-              {/* Sever Connection (Logout) */}
-              {user && (
-                <button
-                  onClick={handleSignOut}
-                  className="p-2.5 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5 hover:border-red-500/30 transition-colors group"
-                  aria-label="Sign Out"
-                >
-                  <LogOut className="w-5 h-5 text-zinc-400 group-hover:text-red-400 transition-colors" />
-                </button>
-              )}
-            </div>
+                {/* Sever the Bond */}
+                {user && (
+                  <button
+                    onClick={handleSignOut}
+                    className="px-3 py-2 bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/5 hover:border-red-500/30 transition-all group"
+                    aria-label="Sever the Bond"
+                    title="Sever the Bond"
+                  >
+                    <LogOut className="w-4 h-4 text-zinc-400 group-hover:text-red-400 transition-colors" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -173,9 +213,10 @@ export function Navigation({
       <nav className="lg:hidden absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
-            {/* Home Icon */}
-            <Link to="/hub" aria-label="Return to Hub">
-              <Home className="w-6 h-6 text-zinc-500" />
+            {/* Return to Sanctuary */}
+            <Link to="/hub" aria-label="Return to Sanctuary" className="flex items-center gap-2">
+              <PenTool className="w-6 h-6 text-neutral-200" />
+              <span className="font-serif text-lg tracking-[0.2em] text-neutral-200">EPITAPH</span>
             </Link>
 
             {/* Mobile Menu Button */}
@@ -199,22 +240,14 @@ export function Navigation({
             >
               <div className="px-4 py-4 space-y-3">
                 {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex justify-center">
                   <Link
                     to="/profile"
                     onClick={() => setShowMobileMenu(false)}
-                    className="flex flex-col items-center gap-2 p-4 bg-zinc-900/50 rounded-lg border border-white/5"
+                    className="flex flex-col items-center gap-2 p-4 bg-zinc-900/50 rounded-lg border border-white/5 w-full max-w-xs"
                   >
                     <Award className="w-6 h-6 text-blue-400" />
                     <span className="text-xs uppercase tracking-wider text-zinc-300">Profile</span>
-                  </Link>
-                  <Link
-                    to="/settings"
-                    onClick={() => setShowMobileMenu(false)}
-                    className="flex flex-col items-center gap-2 p-4 bg-zinc-900/50 rounded-lg border border-white/5"
-                  >
-                    <Settings className="w-6 h-6 text-green-400" />
-                    <span className="text-xs uppercase tracking-wider text-zinc-300">Settings</span>
                   </Link>
                 </div>
 
@@ -223,9 +256,9 @@ export function Navigation({
                   {user ? (
                     <>
                       <div className="px-3 py-2 mb-3 bg-zinc-900/50 rounded-lg border border-white/5">
-                        <div className="text-xs text-zinc-500 mb-1">Vessel</div>
+                        <div className="text-xs text-zinc-500 mb-1">Bound Soul</div>
                         <div className="text-sm text-zinc-300 uppercase tracking-wider">
-                          {user.email?.split('@')[0] || 'SCRIBE'}
+                          {getDisplayName()}
                         </div>
                       </div>
                       <button
@@ -236,7 +269,7 @@ export function Navigation({
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors border border-red-900/30"
                       >
                         <LogOut className="w-5 h-5" />
-                        <span className="text-sm uppercase tracking-wider">Sever Connection</span>
+                        <span className="text-sm uppercase tracking-wider">Sever the Bond</span>
                       </button>
                     </>
                   ) : (
@@ -248,7 +281,7 @@ export function Navigation({
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                     >
                       <User className="w-5 h-5" />
-                      <span className="text-sm uppercase tracking-wider">Forge Covenant</span>
+                      <span className="text-sm uppercase tracking-wider">Sign in Blood</span>
                     </button>
                   )}
                 </div>

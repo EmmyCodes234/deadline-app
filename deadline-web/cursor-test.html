@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cursor Test</title>
+    <style>
+        * {
+            cursor: default !important;
+        }
+        body {
+            background: white;
+            padding: 50px;
+            font-family: Arial, sans-serif;
+        }
+        .test-area {
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid black;
+        }
+        button {
+            cursor: pointer !important;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body style="cursor: default !important;">
+    <h1>Cursor Visibility Test</h1>
+    <p>Move your mouse over this page. You should see a cursor.</p>
+    
+    <div class="test-area">
+        <p>Hover over this box - cursor should be visible</p>
+        <button onclick="alert('Button clicked!')">Click Me</button>
+    </div>
+
+    <script>
+        // Force cursor via JavaScript
+        document.documentElement.style.cursor = 'default';
+        document.body.style.cursor = 'default';
+        
+        // Log cursor style
+        console.log('HTML cursor:', window.getComputedStyle(document.documentElement).cursor);
+        console.log('Body cursor:', window.getComputedStyle(document.body).cursor);
+    </script>
+</body>
+</html>

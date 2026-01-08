@@ -1,5 +1,6 @@
 import React from 'react';
-import { GothicIcon, GothicIconVariant, GothicIconSize } from './GothicIcon';
+import { GothicIcon } from './GothicIcon';
+import type { GothicIconVariant, GothicIconSize } from './GothicIcon';
 import {
   Skull,
   Flame,
@@ -60,7 +61,7 @@ export const GothicIconShowcase: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <header className="mb-12">
           <h1 className="text-4xl font-bold mb-4 flex items-center gap-4">
-            <GothicIcon variant="arcane" size="xl" aria-hidden="true">
+            <GothicIcon variant="arcane" size="xl" aria-hidden={true}>
               <BookOpen />
             </GothicIcon>
             Gothic Icon Visual Reference
@@ -80,7 +81,7 @@ export const GothicIconShowcase: React.FC = () => {
                 className="bg-gray-800 rounded-lg p-6 border border-gray-700"
               >
                 <div className="flex items-center gap-4 mb-4">
-                  <GothicIcon variant={variant} size="xl" aria-hidden="true">
+                  <GothicIcon variant={variant} size="xl" aria-hidden={true}>
                     <Skull />
                   </GothicIcon>
                   <div>
@@ -211,7 +212,7 @@ export const GothicIconShowcase: React.FC = () => {
               <h3 className="text-lg font-bold mb-4">🔴 Haunting Ritual Mode</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <GothicIcon variant="blood" size="lg" aria-hidden="true">
+                  <GothicIcon variant="blood" size="lg" aria-hidden={true}>
                     <Skull />
                   </GothicIcon>
                   <span>Mode Icon</span>
@@ -223,13 +224,13 @@ export const GothicIconShowcase: React.FC = () => {
                   <span>Start/Play</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <GothicIcon variant="blood" size="md" aria-hidden="true">
+                  <GothicIcon variant="blood" size="md" aria-hidden={true}>
                     <Heart />
                   </GothicIcon>
                   <span>Patience/Sanity</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <GothicIcon variant="blood" size="md" aria-hidden="true">
+                  <GothicIcon variant="blood" size="md" aria-hidden={true}>
                     <Zap />
                   </GothicIcon>
                   <span>Speed/WPM</span>
@@ -248,7 +249,7 @@ export const GothicIconShowcase: React.FC = () => {
               <h3 className="text-lg font-bold mb-4">🟣 Grimoire Editor Mode</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <GothicIcon variant="arcane" size="lg" aria-hidden="true">
+                  <GothicIcon variant="arcane" size="lg" aria-hidden={true}>
                     <BookOpen />
                   </GothicIcon>
                   <span>Mode Icon</span>
@@ -291,7 +292,7 @@ export const GothicIconShowcase: React.FC = () => {
                   <span>Settings</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <GothicIcon variant="soul" size="md" aria-hidden="true">
+                  <GothicIcon variant="soul" size="md" aria-hidden={true}>
                     <CheckCircle />
                   </GothicIcon>
                   <span>Success</span>
@@ -304,7 +305,7 @@ export const GothicIconShowcase: React.FC = () => {
               <h3 className="text-lg font-bold mb-4">🟡 Rewards & Status</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <GothicIcon variant="relic" size="lg" aria-hidden="true">
+                  <GothicIcon variant="relic" size="lg" aria-hidden={true}>
                     <Skull />
                   </GothicIcon>
                   <span>Skull Score</span>
@@ -326,13 +327,13 @@ export const GothicIconShowcase: React.FC = () => {
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <GothicIcon variant="blood" size="lg" aria-hidden="true">
+                <GothicIcon variant="blood" size="lg" aria-hidden={true}>
                   <AlertTriangle />
                 </GothicIcon>
                 <span>Error/Warning</span>
               </div>
               <div className="flex items-center gap-3">
-                <GothicIcon variant="soul" size="lg" aria-hidden="true">
+                <GothicIcon variant="soul" size="lg" aria-hidden={true}>
                   <CheckCircle />
                 </GothicIcon>
                 <span>Success</span>

@@ -45,27 +45,24 @@ export function TypingParticles({ isActive, targetElement }: TypingParticlesProp
   }, []);
 
   const spawnParticles = useCallback((x: number, y: number) => {
-    const particleCount = Math.floor(Math.random() * 3) + 3; // 3-5 particles
+    const particleCount = Math.floor(Math.random() * 3) + 4; // 4-6 particles
     const newParticles: Particle[] = [];
 
-    // Determine color based on WPM (Heat System)
-    const isHot = wpm > 60;
-    const colors = isHot 
-      ? ['#dc2626', '#ea580c', '#f59e0b', '#fbbf24'] // Red/Orange embers
-      : ['#3f3f46', '#52525b', '#71717a', '#a1a1aa']; // Grey/Black ash
+    // Gold and white sparks to match the yellow text
+    const colors = ['#FFD700', '#FFD700', '#FFFFFF', '#FFF8DC']; // Gold and white
 
     for (let i = 0; i < particleCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 100 + 50; // 50-150px/s
+      // Slight horizontal spread, but mainly upward
+      const horizontalSpread = (Math.random() - 0.5) * 40; // -20 to 20px horizontal
       
       newParticles.push({
         id: particleIdCounter++,
         x,
         y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
+        vx: horizontalSpread, // Minimal horizontal movement
+        vy: -80, // Upward movement (rising sparks)
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 4 + 2, // 2-6px
+        size: Math.random() * 3 + 2, // 2-5px
       });
     }
 
@@ -74,8 +71,8 @@ export function TypingParticles({ isActive, targetElement }: TypingParticlesProp
     // Auto-cleanup after animation
     setTimeout(() => {
       setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
-    }, 600);
-  }, [wpm]);
+    }, 500);
+  }, []);
 
   // Listen for keystrokes and spawn particles at input position
   useEffect(() => {
@@ -138,10 +135,10 @@ export function TypingParticles({ isActive, targetElement }: TypingParticlesProp
               scale: 1,
             }}
             animate={{
-              x: particle.x + particle.vx * 0.5,
-              y: particle.y + particle.vy * 0.5,
+              x: particle.x + particle.vx,
+              y: particle.y - 50, // Float upward 50px (rising heat)
               opacity: 0,
-              scale: 0,
+              scale: 0.3,
             }}
             exit={{
               opacity: 0,
@@ -155,9 +152,7 @@ export function TypingParticles({ isActive, targetElement }: TypingParticlesProp
               width: particle.size,
               height: particle.size,
               backgroundColor: particle.color,
-              boxShadow: wpm > 60 
-                ? `0 0 ${particle.size * 2}px ${particle.color}` 
-                : 'none',
+              boxShadow: `0 0 ${particle.size * 4}px ${particle.color}`, // Glow for all gold/white particles
             }}
           />
         ))}

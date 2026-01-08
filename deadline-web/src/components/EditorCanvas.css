@@ -1,0 +1,204 @@
+/**
+ * EditorCanvas Styles
+ * Subtle horror theme with focus on readability
+ * Requirements: 10.1, 10.4 - Subtle parchment texture, proper contrast, non-intrusive
+ */
+
+.editor-canvas {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  margin: 0 auto;
+  /* Dark parchment background with enhanced texture */
+  background-color: #1a1816;
+  background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='6' seed='3' /%3E%3CfeColorMatrix type='saturate' values='0.15'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23parchment)' opacity='0.12' fill='%23d4c8b4'/%3E%3C/svg%3E");
+  background-size: 250px 250px;
+  background-attachment: fixed;
+  /* High-quality serif font for book typography */
+  font-family: 'Crimson Pro', 'Merriweather', Georgia, serif;
+  font-size: 18px;
+  /* Parchment ink color for reduced eye strain */
+  color: #e6e6e6;
+  /* Increased line height for better readability */
+  line-height: 1.8;
+  transition: opacity 0.3s ease;
+}
+
+.editor-canvas-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: rgba(220, 210, 200, 0.5);
+  font-family: 'IM Fell English', serif;
+  font-size: 1.25rem;
+}
+
+/* Save status indicator */
+.save-status {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(40, 36, 32, 0.9);
+  border: 1px solid rgba(139, 69, 19, 0.3);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: 'Crimson Text', serif;
+  color: rgba(220, 210, 200, 0.8);
+  z-index: 100;
+  transition: opacity 0.2s ease;
+}
+
+.save-status:empty {
+  display: none;
+}
+
+/* Document title */
+.editor-title {
+  font-size: 2.5em;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  border: none;
+  outline: none;
+  color: rgba(220, 210, 200, 0.95);
+  font-family: 'IM Fell English', 'Crimson Text', Georgia, serif;
+  line-height: 1.2;
+  min-height: 1.2em;
+}
+
+.editor-title:focus {
+  outline: 2px solid rgba(139, 69, 19, 0.5);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.editor-title:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(220, 210, 200, 0.3);
+  font-style: italic;
+}
+
+/* Main content editor */
+.editor-content {
+  min-height: 60vh;
+  padding: 1rem;
+  border: none;
+  outline: none;
+  color: #e6e6e6;
+  font-family: 'Crimson Pro', 'Merriweather', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.editor-content:focus {
+  outline: 2px solid rgba(139, 69, 19, 0.5);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.editor-content:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(220, 210, 200, 0.3);
+  font-style: italic;
+}
+
+/* Focus mode - reduce opacity of surrounding elements */
+.editor-canvas.focus-mode {
+  opacity: 1;
+}
+
+/* Ensure proper contrast for accessibility */
+.editor-canvas * {
+  /* Minimum 4.5:1 contrast ratio */
+  color: inherit;
+}
+
+/* Subtle vignette effect (non-animated) - Requirement 10.1 */
+.editor-canvas::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  /* Subtle, non-animated vignette for depth */
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.2) 80%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  z-index: 1;
+}
+
+.editor-canvas > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .editor-canvas {
+    padding: 2rem 1rem;
+  }
+
+  .editor-title {
+    font-size: 2em;
+  }
+
+  .save-status {
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+}
+
+/* Gothic scrollbar styling - Requirement 10.1 */
+.editor-canvas::-webkit-scrollbar {
+  width: 10px;
+}
+
+.editor-canvas::-webkit-scrollbar-track {
+  background: rgba(20, 16, 12, 0.5);
+  border-left: 1px solid rgba(139, 92, 46, 0.2);
+}
+
+.editor-canvas::-webkit-scrollbar-thumb {
+  background: rgba(87, 83, 78, 0.6);
+  border-radius: 2px;
+  border: 1px solid rgba(139, 92, 46, 0.3);
+}
+
+.editor-canvas::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 46, 0.7);
+  border-color: rgba(139, 92, 46, 0.5);
+}
+
+/* Firefox scrollbar */
+.editor-canvas {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(87, 83, 78, 0.6) rgba(20, 16, 12, 0.5);
+}
+
+/* Print styles */
+@media print {
+  .editor-canvas {
+    background: white;
+    color: black;
+  }
+
+  .save-status {
+    display: none;
+  }
+
+  .editor-canvas::before {
+    display: none;
+  }
+}

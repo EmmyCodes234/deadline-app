@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase, getUserId } from '../lib/supabase';
 
 export type CryptItemType = 'tombstone' | 'mausoleum';
+export type DocumentMode = 'free' | 'fragment';
+
+export interface FragmentConfig {
+  fragmentId: string;
+  fragmentTitle: string;
+  completedStory?: string;
+}
 
 export interface AltarNotes {
   synopsis: string;
@@ -30,6 +37,8 @@ export interface CryptItem {
   order?: number; // For corkboard view ordering
   wordGoal?: number; // Word count goal for this item
   snapshots?: Snapshot[]; // Temporal Tombs (version history)
+  mode?: DocumentMode; // 'free' or 'fragment' - determines editor behavior
+  fragmentConfig?: FragmentConfig; // Fragment data if mode === 'fragment'
 }
 
 // Legacy Document interface for backward compatibility
@@ -205,17 +214,28 @@ export function useCrypt() {
     }
   }, [items]);
 
-  const createDoc = useCallback((parentId: string | null = null) => {
+  const createDoc = useCallback((
+    titleOrParentId?: string | null,
+    mode: DocumentMode = 'free',
+    fragmentConfig?: FragmentConfig
+  ) => {
+    // Handle backward compatibility: if first param is null or looks like an ID, treat as parentId
+    const isParentId = titleOrParentId === null || (typeof titleOrParentId === 'string' && titleOrParentId.startsWith('doc_'));
+    const parentId = isParentId ? titleOrParentId : null;
+    const title = !isParentId && typeof titleOrParentId === 'string' ? titleOrParentId : 'Untitled Haunting';
+    
     const newDoc: CryptItem = {
       id: generateId(),
       type: 'tombstone',
-      title: 'Untitled Haunting',
+      title,
       content: '',
       lastModified: Date.now(),
       wordCount: 0,
       parentId,
       children: [],
       order: Date.now(),
+      mode,
+      fragmentConfig,
     };
     
     setItems((prev) => {

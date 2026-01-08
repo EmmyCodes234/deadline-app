@@ -1,0 +1,360 @@
+/**
+ * MetadataPanel Styles
+ * Gothic horror theme with subtle parchment texture
+ * Requirements: 10.1, 10.4 - Subtle theme, proper contrast
+ */
+
+.metadata-panel {
+  width: 300px;
+  height: 100%;
+  padding: 2rem 1.5rem;
+  /* Dark color scheme with paper grain texture */
+  background: 
+    linear-gradient(
+      to bottom,
+      rgba(20, 16, 12, 0.95),
+      rgba(28, 24, 20, 0.95)
+    ),
+    url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.2' numOctaves='4' seed='5' /%3E%3CfeColorMatrix type='saturate' values='0.1'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23grain)' opacity='0.06' fill='%23e8dcc8'/%3E%3C/svg%3E");
+  background-size: auto, 180px 180px;
+  background-attachment: scroll, fixed;
+  /* Softer book binding border */
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  /* Crimson Text font for readability */
+  font-family: 'Crimson Text', Georgia, serif;
+  /* Proper contrast - 4.5:1 minimum */
+  color: rgba(255, 248, 240, 0.9);
+  transition: opacity 0.3s ease;
+}
+
+.metadata-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(255, 248, 240, 0.5);
+  font-style: italic;
+}
+
+.metadata-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metadata-section:last-child {
+  border-bottom: none;
+}
+
+.metadata-heading {
+  font-family: 'IM Fell English', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: rgba(255, 248, 240, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Statistics Grid */
+.statistics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255, 248, 240, 0.7);
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 248, 240, 0.95);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Word Goal */
+.word-goal-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.word-goal-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.word-goal-current {
+  font-weight: 600;
+  color: rgba(255, 248, 240, 0.95);
+}
+
+.word-goal-separator {
+  color: rgba(255, 248, 240, 0.5);
+}
+
+.word-goal-target {
+  color: rgba(255, 248, 240, 0.7);
+}
+
+.word-goal-clear {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255, 248, 240, 0.5);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.word-goal-clear:hover {
+  color: rgba(220, 38, 38, 0.8);
+}
+
+.word-goal-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(139, 92, 46, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.word-goal-progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(139, 92, 46, 0.8),
+    rgba(184, 134, 11, 0.8)
+  );
+  transition: width 0.3s ease;
+}
+
+.word-goal-percentage {
+  font-size: 0.9rem;
+  color: rgba(255, 248, 240, 0.7);
+  text-align: right;
+  display: block;
+}
+
+.word-goal-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.word-goal-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 248, 240, 0.9);
+  padding: 0.5rem;
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: border-color 0.2s ease;
+}
+
+.word-goal-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.word-goal-submit {
+  background: rgba(139, 92, 46, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 248, 240, 0.9);
+  padding: 0.5rem 1rem;
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.word-goal-submit:hover {
+  background: rgba(139, 92, 46, 0.5);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Synopsis - Physical Card Style */
+.synopsis-textarea {
+  width: 100%;
+  min-height: 100px;
+  background: #1c1917;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  color: rgba(255, 248, 240, 0.9);
+  padding: 0.75rem;
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-radius: 4px;
+  resize: vertical;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.synopsis-textarea:focus {
+  outline: none;
+  border-color: rgba(139, 92, 46, 0.6);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.synopsis-textarea::placeholder {
+  color: rgba(255, 248, 240, 0.4);
+}
+
+.synopsis-counter {
+  display: block;
+  text-align: right;
+  font-size: 0.8rem;
+  color: rgba(255, 248, 240, 0.5);
+  margin-top: 0.25rem;
+}
+
+/* Tags */
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  min-height: 32px;
+}
+
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(139, 92, 46, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+}
+
+.tag-text {
+  color: rgba(255, 248, 240, 0.9);
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 248, 240, 0.5);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.tag-remove:hover {
+  color: rgba(220, 38, 38, 0.8);
+}
+
+.tag-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tag-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 248, 240, 0.9);
+  padding: 0.5rem;
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: border-color 0.2s ease;
+}
+
+.tag-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tag-input::placeholder {
+  color: rgba(255, 248, 240, 0.4);
+}
+
+.tag-submit {
+  background: rgba(139, 92, 46, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 248, 240, 0.9);
+  padding: 0.5rem 1rem;
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.tag-submit:hover {
+  background: rgba(139, 92, 46, 0.5);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Gothic scrollbar styling - Requirement 10.1 */
+.metadata-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.metadata-panel::-webkit-scrollbar-track {
+  background: rgba(20, 16, 12, 0.5);
+  border-left: 1px solid rgba(139, 92, 46, 0.2);
+}
+
+.metadata-panel::-webkit-scrollbar-thumb {
+  background: rgba(87, 83, 78, 0.6);
+  border-radius: 2px;
+  border: 1px solid rgba(139, 92, 46, 0.3);
+}
+
+.metadata-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 46, 0.7);
+  border-color: rgba(139, 92, 46, 0.5);
+}
+
+/* Firefox scrollbar */
+.metadata-panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(87, 83, 78, 0.6) rgba(20, 16, 12, 0.5);
+}
+
+/* Focus mode opacity */
+.metadata-panel.focus-mode {
+  opacity: 0.3;
+}
+
+.metadata-panel.focus-mode:hover {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .metadata-panel {
+    display: none;
+  }
+}

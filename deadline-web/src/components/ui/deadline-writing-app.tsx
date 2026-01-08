@@ -717,7 +717,7 @@ export function DeadLineWritingApp() {
                   </p>
                 </div>
                 <p className="text-sm text-zinc-500 italic">
-                  Write with purpose. Write with urgency. Write or die.
+                  Write with purpose. Write with permanence. Words carved in stone.
                 </p>
               </div>
               <div className="pt-4 flex justify-end">

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&family=Creepster&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&family=Creepster&family=Caveat:wght@400;700&family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&family=IM+Fell+DW+Pica:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Noto+Sans+Symbols+2&display=swap');
 
 /* Ensure fonts load with swap to prevent invisible text */
 @font-face {
@@ -19,55 +19,208 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* CRITICAL: Global Reset - Eliminate all default spacing */
+html, body, #root {
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+/* CRITICAL: Force cursor to be visible - must be outside @layer for maximum specificity */
+*, *::before, *::after, html, body, #root {
+  cursor: default !important;
+}
+
+button, a, [role="button"], input[type="button"], input[type="submit"], select {
+  cursor: pointer !important;
+}
+
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+input[type="search"],
+textarea, 
+[contenteditable="true"] {
+  cursor: text !important;
+}
+
+/* ACCESSIBILITY: Global focus indicators for WCAG 2.1 AA compliance */
+/* Exclude html and body from focus outlines to prevent red line at top */
+*:focus:not(html):not(body) {
+  outline: 2px solid #dc2626 !important; /* Red-600 for visibility */
+  outline-offset: 2px !important;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+*:focus-visible:not(html):not(body) {
+  outline: 2px solid #dc2626 !important;
+  outline-offset: 2px !important;
+}
+
+/* Ensure buttons have visible focus indicators */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid #dc2626 !important;
+  outline-offset: 2px !important;
+}
+
+/* Ensure inputs have visible focus indicators */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[contenteditable="true"]:focus-visible {
+  outline: 2px solid #dc2626 !important;
+  outline-offset: 2px !important;
+}
+
 @layer base {
+  /* Smooth transitions for all interactive elements */
   * {
-    scrollbar-width: thin;
-    scrollbar-color: #27272a #09090b;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
   }
 
-  *::-webkit-scrollbar {
-    width: 12px;
+  /* Ensure cursor is visible and works properly */
+  *, html, body {
+    cursor: default !important;
   }
 
-  *::-webkit-scrollbar-track {
-    background: linear-gradient(to right, #1c1917 0%, #292524 50%, #1c1917 100%);
-    border-left: 1px solid rgba(120, 113, 108, 0.2);
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+  /* Pointer cursor for interactive elements */
+  button, a, [role="button"], input[type="button"], input[type="submit"] {
+    cursor: pointer !important;
   }
 
-  *::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #6a0dad 0%, #4c0a7d 100%);
-    border-radius: 6px;
-    border: 2px solid rgba(106, 13, 173, 0.3);
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(106, 13, 173, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Text cursor for editable areas */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"], 
+  input[type="search"],
+  textarea, 
+  [contenteditable="true"] {
+    cursor: text !important;
   }
 
-  *::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #8b5cf6 0%, #6a0dad 100%);
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    border-color: rgba(139, 92, 246, 0.5);
+  /* Default: prevent text selection on all elements */
+  * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Only allow selection in actual editable/content areas */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"], 
+  input[type="search"],
+  textarea, 
+  [contenteditable="true"],
+  .book-prose-editor,
+  .selectable-text {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+  
+  /* Disable spellcheck visual indicators globally */
+  * {
+    -webkit-text-decoration-skip: none;
+    text-decoration-skip-ink: none;
+  }
+  
+  *::-webkit-grammar-error,
+  *::-webkit-spelling-error {
+    display: none !important;
+  }
+  
+  /* Hidden lore messages - no interaction, no spellcheck */
+  .hidden-lore-message {
+    pointer-events: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
+  
+  /* Prevent caret from appearing on non-editable elements */
+  *:not(input):not(textarea):not([contenteditable="true"]) {
+    caret-color: transparent !important;
   }
 
-  *::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-    box-shadow: 0 0 20px rgba(167, 139, 250, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  }
-
-  body {
-    background-color: #0a0908;
-    background-image:
-      url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E"),
-      radial-gradient(ellipse at center, rgba(28, 25, 23, 0.4) 0%, rgba(0, 0, 0, 0.9) 100%);
+  /* Force the root elements to be dark - Midnight Slate background with paper grain */
+  html, body {
+    background: #000000;
+    background-color: #000000 !important;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='5' seed='2' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperGrain)' opacity='0.08'/%3E%3C/svg%3E");
     background-attachment: fixed;
-    background-size: 200px 200px, cover;
-    color: #e7e5e4;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     position: relative;
+    outline: none !important; /* Prevent red line at top from focus outline */
   }
 
-  /* Global vignette effect */
+  /* Ensure the main app wrapper fills the screen */
+  #root {
+    min-height: 100vh;
+    height: 100%;
+    width: 100vw;
+    background-color: transparent;
+    overflow: visible;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide ALL scrollbars globally - keep functionality */
+  *, html, body {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE and Edge */
+  }
+
+  *::-webkit-scrollbar,
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  *::-webkit-scrollbar-track,
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+    display: none !important;
+  }
+
+  *::-webkit-scrollbar-thumb,
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb {
+    display: none !important;
+  }
+
+  *::-webkit-scrollbar-corner,
+  html::-webkit-scrollbar-corner,
+  body::-webkit-scrollbar-corner {
+    display: none !important;
+  }
+
+  body {
+    background-color: transparent;
+    background-image: none;
+    color: #e7e5e4;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Global vignette effect - disabled to prevent interference with full-screen pages */
   body::before {
     content: '';
     position: fixed;
@@ -77,11 +230,340 @@
     bottom: 0;
     background: radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0, 0, 0, 0.4) 80%, rgba(0, 0, 0, 0.7) 100%);
     pointer-events: none;
-    z-index: 9999;
+    z-index: -1;
+    display: none;
+  }
+
+  /* Typeset Novel Paragraph Styling */
+  .prose-editor p {
+    text-indent: 2em;
+    margin-bottom: 1em;
+    text-align: left;
+  }
+
+  .prose-editor h1,
+  .prose-editor h2,
+  .prose-editor h3 {
+    text-align: center;
+    text-indent: 0;
+  }
+
+  /* Book-style contenteditable editor - 19th Century Typography */
+  .book-prose-editor {
+    font-family: 'IM Fell English', 'Crimson Text', serif !important;
+    text-align: left !important;
+    line-height: 1.6 !important;
+    outline: none !important;
+    border: none !important;
+    caret-color: #b30000 !important;
+    caret-shape: bar;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 65ch;
+    margin: 0 auto;
+    text-rendering: optimizeLegibility;
+    font-variant-ligatures: common-ligatures;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Subtle caret animation */
+  @keyframes caret-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Placeholder for empty contenteditable - only show when not focused */
+  .book-prose-editor.empty:not(:focus):before {
+    content: attr(data-placeholder);
+    color: #888888;
+    opacity: 0.7;
+    pointer-events: none;
+    position: absolute;
+  }
+  
+  /* Hide placeholder when focused */
+  .book-prose-editor:focus:before {
+    display: none;
+  }
+  
+  /* Kill all browser decorations */
+  input, textarea, [contenteditable] {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  input::-webkit-contacts-auto-fill-button,
+  input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  /* Paragraph indentation - first line indent for all paragraphs */
+  .book-prose-editor p {
+    text-indent: 2.5rem;
+    margin-bottom: 1em;
+    margin-top: 0;
+    text-align: left !important;
+  }
+
+  /* Drop Cap - First letter of first paragraph */
+  .book-prose-editor p:first-of-type::first-letter {
+    float: left;
+    font-size: 3.5rem;
+    line-height: 0.8;
+    padding-right: 8px;
+    padding-top: 4px;
+    font-weight: 400;
+    color: #d4c8b4;
+  }
+
+  /* Remove default contenteditable styling */
+  .book-prose-editor:focus {
+    outline: none !important;
+    border: none !important;
+  }
+
+  /* Blood Vial Progress Bar - Glass Vial with Glowing Liquid */
+  .blood-vial-container {
+    position: relative;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 
+      0 0 15px rgba(255, 0, 0, 0.4),
+      inset 0 2px 5px rgba(255, 255, 255, 0.2);
+    animation: vial-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes vial-pulse {
+    0%, 100% {
+      box-shadow: 
+        0 0 15px rgba(255, 0, 0, 0.4),
+        inset 0 2px 5px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+      box-shadow: 
+        0 0 25px rgba(255, 0, 0, 0.6),
+        inset 0 2px 5px rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  /* Gold Pulse Animation for 100% Completion */
+  @keyframes pulse-gold {
+    0%, 100% {
+      box-shadow: 
+        0 0 20px rgba(251, 191, 36, 0.6),
+        inset 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+    50% {
+      box-shadow: 
+        0 0 35px rgba(251, 191, 36, 0.9),
+        inset 0 0 15px rgba(251, 191, 36, 0.5);
+    }
+  }
+
+  .animate-pulse-gold {
+    animation: pulse-gold 2s ease-in-out infinite;
+  }
+
+  .blood-filler {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(180deg, #ff3333 0%, #cc0000 50%, #660000 100%);
+    transition: width 0.3s ease;
+    border-radius: 20px;
+  }
+
+  .vial-shine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+    pointer-events: none;
+    border-radius: 20px 20px 0 0;
+  }
+
+  /* Cursed Parchment - Paper Texture Effect */
+  .cursed-parchment {
+    position: relative;
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.03) 0px,
+        transparent 1px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 3px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.03) 0px,
+        transparent 1px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 3px
+      );
+    background-size: 3px 3px;
+  }
+
+  .cursed-parchment::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      radial-gradient(circle at 20% 30%, rgba(139, 69, 19, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(101, 67, 33, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(160, 82, 45, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .cursed-parchment::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.01) 2px,
+        rgba(0, 0, 0, 0.01) 4px
+      );
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* Monaco Editor Prose Styling for Noctuary - Book Typography */
+  .noctuary-prose .monaco-editor .view-lines {
+    max-width: 65ch;
+    margin: 0 auto;
+    text-align: left !important;
+  }
+
+  .noctuary-prose .monaco-editor .view-line {
+    text-align: left !important;
+  }
+
+  /* Title lines (starting with #) - centered, no indent */
+  .noctuary-prose .monaco-editor .view-line > span > span:first-child[class*="mtk"] {
+    display: inline-block;
+  }
+
+  /* Check if line starts with # for title styling */
+  .noctuary-prose .monaco-editor .view-line:has(> span > span:first-child[class*="mtk"]:first-letter) {
+    text-align: left !important;
+  }
+
+  /* Paragraph indentation - first line indent for body text */
+  .noctuary-prose .monaco-editor .view-line:not(:first-child) {
+    text-indent: 2rem;
+  }
+
+  /* Remove indent from title lines (lines starting with #) */
+  .noctuary-prose .monaco-editor .view-line:has(> span > span[class*="mtk"]:first-child::before) {
+    text-indent: 0 !important;
+  }
+
+  /* Specific handling for markdown headers - center and no indent */
+  .noctuary-prose .monaco-editor .view-line > span > span[class*="mtk"][class*="heading"] {
+    display: block;
+    text-align: center !important;
+    text-indent: 0 !important;
+  }
+
+  /* Force center alignment for lines that start with # */
+  .noctuary-prose .monaco-editor .view-line:has(> span > span:first-child::first-letter) {
+    text-align: center !important;
+    text-indent: 0 !important;
   }
 }
 
 @layer utilities {
+  /* Atmospheric Fog Animation */
+  @keyframes drift {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Breathing Darkness Animation */
+  @keyframes breathe {
+    0% {
+      background-size: 100% 100%;
+      opacity: 0.6;
+    }
+    50% {
+      background-size: 120% 120%;
+      opacity: 0.8;
+    }
+    100% {
+      background-size: 100% 100%;
+      opacity: 0.6;
+    }
+  }
+
+  .breathing-darkness {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    background: radial-gradient(circle, transparent 50%, black 150%);
+    animation: breathe 8s ease-in-out infinite;
+  }
+
+  /* Film Grain Overlay - Adds texture to prevent flat digital look */
+  .film-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    background-repeat: repeat;
+    background-size: 200px 200px;
+  }
+
+  /* Sanity Glitch Effect - RGB Channel Split */
+  @keyframes glitch-anim {
+    0% {
+      text-shadow: 2px 0 rgba(255, 0, 0, 0.7), -2px 0 rgba(0, 0, 255, 0.7);
+    }
+    20% {
+      text-shadow: -3px 0 rgba(255, 0, 0, 0.7), 3px 0 rgba(0, 0, 255, 0.7);
+    }
+    40% {
+      text-shadow: 3px -2px rgba(255, 0, 0, 0.7), -3px 2px rgba(0, 0, 255, 0.7);
+    }
+    60% {
+      text-shadow: -2px 2px rgba(255, 0, 0, 0.7), 2px -2px rgba(0, 0, 255, 0.7);
+    }
+    80% {
+      text-shadow: 2px -1px rgba(255, 0, 0, 0.7), -2px 1px rgba(0, 0, 255, 0.7);
+    }
+    100% {
+      text-shadow: 2px 0 rgba(255, 0, 0, 0.7), -2px 0 rgba(0, 0, 255, 0.7);
+    }
+  }
+
+  .glitch-text {
+    text-shadow: 2px 0 rgba(255, 0, 0, 0.7), -2px 0 rgba(0, 0, 255, 0.7);
+    animation: glitch-anim 0.3s ease-in-out infinite;
+  }
+
+  .glitch-text:hover {
+    animation: glitch-anim 0.1s ease-in-out infinite;
+  }
+
   .vignette {
     background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.8) 100%);
     pointer-events: none;
@@ -614,7 +1096,6 @@
     border-radius: 0.25rem;
     border: 2px solid #57534e;
     background-color: #292524;
-    cursor: pointer;
     transition: all 150ms;
     position: relative;
   }
@@ -1744,7 +2225,6 @@
   /* Gothic Icon Interactive States */
   .gothic-icon-interactive {
     will-change: filter, transform;
-    cursor: pointer;
     transition: filter 300ms ease, transform 300ms ease, opacity 300ms ease;
   }
 
@@ -1768,7 +2248,6 @@
 
   /* Interactive Gothic Icon - GPU Optimized */
   .gothic-icon-interactive {
-    cursor: pointer;
     will-change: filter, transform;
   }
 
@@ -1860,7 +2339,6 @@
   .gothic-icon-disabled {
     opacity: 0.5;
     filter: none !important;
-    cursor: not-allowed;
     pointer-events: none;
   }
 
@@ -1942,7 +2420,7 @@
     animation: incinerate 0.8s ease-out forwards;
   }
 
-  /* Custom Cursor - Disabled to show default cursor */
+  /* Custom Cursor - DISABLED: Was hiding cursor completely */
   /* @media (hover: hover) and (pointer: fine) {
     * {
       cursor: none !important;
@@ -1961,4 +2439,1022 @@
     color: #f4f4f5; /* Zinc-100 */
     text-shadow: 0 0 8px rgba(220, 38, 38, 0.8); /* Red Glow */
   }
+}
+
+/* ============================================
+   NOCTUARY EDITOR - DIEGETIC HORROR POLISH
+   ============================================ */
+
+/* The Bleed Margin - Handwritten Notes */
+#bleed-margin {
+  background-color: #1a1a1a;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Caveat', cursive;
+  color: #a8a29e; /* Stone-400 */
+  padding: 20px;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* The "Haunt" Notes appearing in the margin */
+.bleed-note {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateX(20px);
+  animation: bleed-in 4s forwards ease-out;
+  color: #b91c1c; /* Red-700 text for the "Haunt" names */
+}
+
+@keyframes bleed-in {
+  to { 
+    opacity: 0.8; 
+    transform: translateX(0); 
+  }
+}
+
+/* Monaco Editor Overrides - Kill VS Code Look */
+.monaco-editor .margin {
+  display: none !important;
+}
+
+.monaco-editor .scroll-decoration {
+  box-shadow: none !important;
+}
+
+.monaco-editor .decorationsOverviewRuler {
+  display: none !important;
+}
+
+/* Hide Monaco's default scrollbars */
+.monaco-editor .scrollbar {
+  opacity: 0 !important;
+}
+
+/* Ensure editor background is pure void */
+.monaco-editor,
+.monaco-editor .monaco-editor-background {
+  background-color: #0b0b0b !important;
+}
+
+/* Custom styling for the "// COWARD" comment */
+.monaco-editor .mtk1 {
+  color: #a3a3a3;
+}
+
+/* Make comments (like // COWARD) stand out in blood red */
+.monaco-editor .mtk3,
+.monaco-editor .comment {
+  color: #dc2626 !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 4px rgba(220, 38, 38, 0.5);
+}
+
+
+/* Custom cursor is now enabled on all pages including Noctuary/Grimoire editor */
+
+/* Candlelight Text Flicker Effect */
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    text-shadow:
+      0 0 4px rgba(255, 215, 0, 0.2),
+      0 0 10px rgba(255, 165, 0, 0.1),
+      0 0 18px rgba(255, 69, 0, 0.1);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.92;
+  }
+}
+
+.candlelit-text {
+  color: #e8dcc8;
+  /* Flicker animation disabled for better readability */
+  /* animation: flicker 4s infinite alternate-reverse; */
+  backface-visibility: hidden;
+}
+
+/* Gothic Crypt Background - Aged Velvet/Leather Texture */
+.crypt-background {
+  background-color: #0a0a0a;
+  background-image: 
+    /* Noise texture for grain */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
+    /* Subtle fabric weave pattern */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    ),
+    /* Dark gradient for depth */
+    radial-gradient(ellipse at center, #1a1410 0%, #0a0604 50%, #000000 100%);
+  background-blend-mode: overlay, multiply, multiply, normal;
+}
+
+/* Strong Gothic Vignette - Forces focus to center */
+.gothic-vignette {
+  position: relative;
+}
+
+.gothic-vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 
+    inset 0 0 150px 50px rgba(0, 0, 0, 0.2),
+    inset 0 0 250px 100px rgba(0, 0, 0, 0.15),
+    inset 0 0 350px 150px rgba(0, 0, 0, 0.1);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.08) 70%,
+    rgba(0, 0, 0, 0.18) 85%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+/* Dim Gothic Lighting - Subtle ambient glow */
+.gothic-lighting {
+  position: relative;
+}
+
+.gothic-lighting::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 800px 600px at 50% 40%,
+    rgba(139, 69, 19, 0.03) 0%,
+    transparent 50%
+  );
+  mix-blend-mode: screen;
+}
+
+/* Worn leather texture variant */
+.leather-texture {
+  background-image: 
+    /* Leather grain */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' seed='2'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E"),
+    /* Dark base */
+    linear-gradient(135deg, #0d0907 0%, #1a0f0a 50%, #0a0604 100%);
+  background-blend-mode: overlay, normal;
+}
+
+/* Aged Dark Parchment Container - Enhanced with Grain & Candlelight */
+.dark-parchment {
+  position: relative;
+  background-color: #000000;
+  background-image: 
+    /* Heavy grain texture overlay */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='5' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E"),
+    /* Paper fiber texture */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E"),
+    /* Rough paper noise */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.95' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
+    /* Subtle gradient for depth */
+    radial-gradient(ellipse at 30% 20%, #000000 0%, #000000 40%, #000000 100%);
+  background-blend-mode: overlay, overlay, multiply, normal;
+  
+  /* Slightly rounded corners - organic, not digital */
+  /* Dual border: subtle outer edge + faint inner glow */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  
+  /* Deep, diffuse candlelight shadow - simulates desk lighting */
+  box-shadow: 
+    /* Soft outer glow from candlelight */
+    0 0 40px rgba(255, 140, 0, 0.08),
+    /* Deep primary shadow */
+    0 12px 24px rgba(0, 0, 0, 0.7),
+    /* Mid-range diffuse shadow */
+    0 8px 16px rgba(0, 0, 0, 0.5),
+    /* Close contact shadow */
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    /* Increased inset shadow - text sunken into darkness */
+    inset 0 0 60px rgba(0, 0, 0, 0.6),
+    inset 0 0 30px rgba(0, 0, 0, 0.4),
+    /* Subtle highlight on top edge */
+    inset 0 1px 0 rgba(255, 255, 255, 0.02),
+    /* Warm candlelight reflection on bottom */
+    inset 0 -1px 2px rgba(255, 140, 0, 0.03);
+}
+
+/* Stains, aging marks, and texture overlay */
+.dark-parchment::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    /* Additional fine grain for texture depth */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fine-grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fine-grain)'/%3E%3C/svg%3E"),
+    /* Coffee/ink stains */
+    radial-gradient(ellipse 120px 80px at 85% 15%, rgba(40, 20, 10, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 90px 90px at 12% 88%, rgba(30, 15, 8, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 60px 100px at 95% 75%, rgba(35, 18, 9, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: 3px;
+}
+
+/* Torn/frayed edge effect */
+.dark-parchment::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(58, 47, 31, 0.3) 2%, 
+    transparent 4%,
+    transparent 96%,
+    rgba(58, 47, 31, 0.3) 98%,
+    transparent 100%
+  );
+  pointer-events: none;
+  border-radius: 3px;
+  mix-blend-mode: multiply;
+}
+
+/* Parchment with subtle vignette */
+.parchment-vignette {
+  position: relative;
+}
+
+.parchment-vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.1) 80%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  pointer-events: none;
+  border-radius: 3px;
+}
+
+/* Gothic Typography System */
+
+/* Aged bone color palette - Brightened for better visibility */
+:root {
+  --bone-white: #f5f0e8;
+  --aged-bone: #f0f0eb;
+  --dark-bone: #b8a890;
+  --faded-bone: #9a8a72;
+}
+
+/* Gothic Title Font - Readable but Elegant */
+.gothic-title {
+  font-family: 'Playfair Display', 'Crimson Text', serif;
+  color: var(--bone-white);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Antique Serif for Body Text */
+.antique-text {
+  font-family: 'IM Fell English', 'Crimson Text', 'Merriweather', serif;
+  color: var(--aged-bone);
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* Antique Serif Alternative (slightly heavier) */
+.antique-text-heavy {
+  font-family: 'IM Fell DW Pica', 'Crimson Text', serif;
+  color: var(--aged-bone);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Title input - bright and clear, no filters */
+input.antique-text-heavy {
+  color: #eae0c8 !important;
+  filter: none !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Small caps for labels */
+.antique-caps {
+  font-family: 'IM Fell English', 'Crimson Text', serif;
+  color: var(--dark-bone);
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  font-size: 0.85em;
+}
+
+/* Faded text for secondary content */
+.faded-antique {
+  font-family: 'IM Fell English', 'Crimson Text', serif;
+  color: var(--faded-bone);
+  font-style: italic;
+}
+
+/* Sidebar Gothic Theme Colors */
+:root {
+  --brass-gold: #b8860b;
+  --old-brass: #9a7d0a;
+  --tarnished-brass: #7d6608;
+  --blood-red: #8b0000;
+  --wax-seal-red: #a52a2a;
+}
+
+/* Brass/Gold text for sidebar */
+.brass-text {
+  color: var(--brass-gold);
+}
+
+.old-brass-text {
+  color: var(--old-brass);
+}
+
+/* Organic Blood Droplet / Wax Seal Indicator - Enhanced */
+.wax-seal {
+  position: relative;
+  width: 11px;
+  height: 11px;
+  background: radial-gradient(
+    ellipse at 35% 25%,
+    #d32f2f 0%,
+    #c41e3a 30%,
+    var(--wax-seal-red) 60%,
+    var(--blood-red) 100%
+  );
+  
+  /* Highly irregular, organic blob shape - messy liquid droplet */
+  border-radius: 38% 62% 71% 29% / 42% 58% 42% 58%;
+  
+  /* Deep shadow and glossy highlight for wet liquid appearance */
+  box-shadow: 
+    /* Outer red glow - blood aura */
+    0 0 8px rgba(139, 0, 0, 0.8),
+    0 0 4px rgba(196, 30, 58, 0.6),
+    /* Depth shadow - liquid sitting on surface */
+    0 2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    /* Dark bottom edge */
+    inset 0 -2px 3px rgba(0, 0, 0, 0.5),
+    /* Glossy highlight on top - wet sheen */
+    inset 1px 1px 2px rgba(255, 120, 120, 0.4),
+    inset -1px -1px 1px rgba(80, 0, 0, 0.3);
+  
+  /* Slight animation for organic, living feel */
+  animation: blood-pulse 4s ease-in-out infinite;
+}
+
+/* Subtle organic pulsing animation - like living blood */
+@keyframes blood-pulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    border-radius: 38% 62% 71% 29% / 42% 58% 42% 58%;
+  }
+  33% {
+    transform: scale(1.03) rotate(1deg);
+    opacity: 0.97;
+    border-radius: 45% 55% 63% 37% / 48% 52% 48% 52%;
+  }
+  66% {
+    transform: scale(1.02) rotate(-1deg);
+    opacity: 0.98;
+    border-radius: 42% 58% 68% 32% / 45% 55% 45% 55%;
+  }
+}
+
+/* Add texture overlay to blood droplet - organic surface */
+.wax-seal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='blood-texture'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='4' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23blood-texture)'/%3E%3C/svg%3E");
+  border-radius: 38% 62% 71% 29% / 42% 58% 42% 58%;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Add subtle drip effect at bottom */
+.wax-seal::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  background: radial-gradient(circle, var(--blood-red) 0%, transparent 70%);
+  border-radius: 50% 50% 80% 80%;
+  opacity: 0.6;
+}
+
+/* Index Card / Note Paper Style */
+.index-card {
+  background-color: #f5f1e8;
+  background-image: 
+    /* Paper texture */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper-card'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='8'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper-card)'/%3E%3C/svg%3E"),
+    /* Subtle gradient */
+    linear-gradient(135deg, #f5f1e8 0%, #ebe5d9 100%);
+  
+  /* Slight rotation for imperfect placement */
+  transform: rotate(1.5deg);
+  
+  /* Drop shadow to lift off background */
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 8px 12px rgba(0, 0, 0, 0.15);
+  
+  /* Subtle border */
+  border: 1px solid #d4c8b4;
+  border-radius: 2px;
+  
+  /* Padding */
+  padding: 16px;
+}
+
+/* Dark ink text for index card */
+.ink-text {
+  color: #2c2416;
+  font-family: 'IM Fell English', 'Crimson Text', serif;
+}
+
+/* Index card label */
+.card-label {
+  color: #5a4a3a;
+  font-family: 'IM Fell English', serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* Remove spellcheck and focus rings for immersion */
+input,
+textarea,
+[contenteditable] {
+  outline: none !important;
+  -webkit-spellcheck: false;
+}
+
+input:focus,
+textarea:focus,
+[contenteditable]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Disable browser spellcheck globally */
+* {
+  -webkit-user-modify: read-write-plaintext-only;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+  -webkit-user-modify: read-write-plaintext-only;
+}
+
+/* Stone Rune / Tarot Card Tab Styling */
+.stone-rune {
+  position: relative;
+  background: linear-gradient(135deg, #000000 0%, #000000 50%, #000000 100%);
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  padding: 8px 10px;
+  min-width: 0; /* Allow flex items to shrink below content size */
+  white-space: nowrap;
+  
+  /* Stone texture */
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='stone'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='4'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23stone)'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, #000000 0%, #000000 50%, #000000 100%);
+  
+  /* Subtle bevel effect */
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  
+  transition: all 0.3s ease;
+}
+
+.stone-rune:hover {
+  background: linear-gradient(135deg, #0a0a0a 0%, #050505 50%, #000000 100%);
+  border-color: #2a2a2a;
+}
+
+/* Active/Activated Rune - Golden Glow */
+.stone-rune-active {
+  background: linear-gradient(135deg, #3a2f1a 0%, #2a2212 50%, #1a1508 100%);
+  border: 1px solid #b8860b;
+  
+  /* Golden glow effect */
+  box-shadow: 
+    0 0 12px rgba(184, 134, 11, 0.6),
+    0 0 6px rgba(218, 165, 32, 0.4),
+    inset 0 1px 0 rgba(255, 215, 0, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+  
+  /* Subtle pulse animation */
+  animation: rune-glow 2s ease-in-out infinite;
+}
+
+@keyframes rune-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 12px rgba(184, 134, 11, 0.6),
+      0 0 6px rgba(218, 165, 32, 0.4),
+      inset 0 1px 0 rgba(255, 215, 0, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+      0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 
+      0 0 16px rgba(184, 134, 11, 0.7),
+      0 0 8px rgba(218, 165, 32, 0.5),
+      inset 0 1px 0 rgba(255, 215, 0, 0.15),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+      0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Blood Vial Progress Bar - Realistic Glass Tube with Blood */
+.blood-vial-container {
+  position: relative;
+  height: 10px;
+  background: #1a0000;
+  border: 1px solid #441111;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 15px rgba(255, 0, 0, 0.6);
+  z-index: 51;
+}
+
+.blood-filler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ff4d4d 0%, #990000 100%);
+  border-radius: 12px;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.4), 0 0 10px rgba(255, 0, 0, 0.5);
+  transition: width 0.3s ease;
+}
+
+.vial-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Psychosis Hover Effect - Chromatic Aberration + Shake */
+@keyframes psychosis-shake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1px, 1px); }
+  20% { transform: translate(1px, -1px); }
+  30% { transform: translate(-1px, -1px); }
+  40% { transform: translate(1px, 1px); }
+  50% { transform: translate(-1px, 1px); }
+  60% { transform: translate(1px, -1px); }
+  70% { transform: translate(-1px, -1px); }
+  80% { transform: translate(1px, 1px); }
+  90% { transform: translate(-1px, 1px); }
+}
+
+.psychosis-hover {
+  transition: text-shadow 0.1s ease;
+}
+
+.psychosis-hover:hover {
+  text-shadow: -2px 0 rgba(255, 0, 0, 0.8), 2px 0 rgba(0, 255, 255, 0.8);
+  animation: psychosis-shake 0.2s ease-in-out infinite;
+}
+
+/* Torch Lighting Effect - Usable Darkness */
+.torch-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  background: radial-gradient(
+    ellipse 900px 500px at var(--x, 50%) var(--y, 50%),
+    transparent 0%,
+    rgba(0, 0, 0, 0.4) 30%,
+    rgba(0, 0, 0, 0.92) 100%
+  );
+  transition: background 0.1s ease-out;
+}
+
+/* Safe Zone - Writing Paper Glow */
+.writing-paper-glow {
+  box-shadow: 
+    0 10px 50px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(212, 200, 180, 0.1);
+}
+
+/* Cursed Translation Hover Effect - Instant Glitch */
+.cursed-translation {
+  transition: none;
+}
+
+.cursed-translation:hover {
+  font-family: 'Caveat', 'Noto Sans Symbols 2', cursive !important;
+  color: #dc2626 !important;
+  filter: blur(0.5px);
+  transition: none;
+}
+
+/* Dying Candle Flicker - Erratic Atmospheric Effect */
+@keyframes candle-flicker {
+  0%, 90% { 
+    filter: brightness(1); 
+  }
+  91% { 
+    filter: brightness(0.8); 
+  }
+  92% { 
+    filter: brightness(1.1); /* Flare up */
+  }
+  93% { 
+    filter: brightness(0.9); 
+  }
+  94%, 100% { 
+    filter: brightness(1); 
+  }
+}
+
+body {
+  animation: candle-flicker 15s infinite;
+}
+
+/* Physical Typing Tremor - Heavy Keypress Feel */
+.tremor {
+  transition: none;
+}
+
+/* Dust Motes Floating Animation */
+@keyframes float {
+  0% { 
+    transform: translateY(0) translateX(0); 
+    opacity: 0; 
+  }
+  50% { 
+    opacity: 0.8; 
+  }
+  100% { 
+    transform: translateY(-100px) translateX(20px); 
+    opacity: 0; 
+  }
+}
+
+/* Heat Haze Distortion - Boiling Blood Effect */
+.boiling-blood {
+  filter: url(#noise-warp);
+}
+
+/* Slice Click Effect - Sword Slash Animation */
+@keyframes slice-top {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-5px, -2px);
+    opacity: 0;
+  }
+}
+
+@keyframes slice-bottom {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(5px, 2px);
+    opacity: 0;
+  }
+}
+
+.slice-clone {
+  position: absolute;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.slice-clone-top {
+  clip-path: inset(0 0 50% 0);
+  animation: slice-top 0.2s ease-out forwards;
+}
+
+.slice-clone-bottom {
+  clip-path: inset(50% 0 0 0);
+  animation: slice-bottom 0.2s ease-out forwards;
+}
+
+
+  /* Lenis Smooth Scroll - Ensure compatibility with fixed backgrounds */
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
+  }
+
+
+  /* Performance Optimizations for Background Videos */
+  video {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Optimize backdrop-blur for mobile */
+  @media (max-width: 768px) {
+    .backdrop-blur-xl {
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+    }
+    
+    /* Fallback for devices that don't support backdrop-filter well */
+    @supports not (backdrop-filter: blur(12px)) {
+      .backdrop-blur-xl,
+      .backdrop-blur-md {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+    }
+  }
+
+  /* GPU Acceleration for animated elements */
+  .profile-card,
+  .soul-metric-card,
+  .avatar-heartbeat {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Optimize Framer Motion animations */
+  [data-framer-component-type] {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+  }
+
+/* Custom Invocation Input Styling */
+@layer utilities {
+  /* Blinking block cursor effect for inputs */
+  .invocation-input {
+    caret-color: white;
+    caret-shape: block;
+  }
+  
+  /* Enhanced text glow for better visibility */
+  .invocation-input:focus {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.6),
+                 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Animated cursor blink */
+  @keyframes cursor-blink {
+    0%, 49% {
+      border-right-color: white;
+    }
+    50%, 100% {
+      border-right-color: transparent;
+    }
+  }
+  
+  /* Block cursor simulation */
+  .invocation-input::after {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: white;
+    animation: cursor-blink 1s step-end infinite;
+  }
+}
+
+/* Shake animation for invalid input */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Ghostly Float Animation - For Empty State Feather */
+@keyframes ghost-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-ghost-float {
+  animation: ghost-float 2s ease-in-out infinite;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ghost-float {
+    animation: none;
+  }
+}
+
+
+/* PHASE 3: Squish Prevention - Safety check for very short screens */
+@media (max-height: 600px) {
+  /* Reduce logo size on short screens */
+  .deadline-title-normal,
+  .deadline-title-red {
+    font-size: clamp(2rem, 8vh, 4rem) !important;
+  }
+  
+  /* Reduce card container height */
+  .hub-cards-container {
+    height: min(40vh, 300px) !important;
+  }
+}
+
+/* Fallback for extremely short screens (landscape phones) */
+@media (max-height: 500px) {
+  .hub-main-wrapper {
+    overflow-y: auto !important;
+  }
+}
+
+/* ===================================
+   GRIMOIRE EDITOR - TEXT FORMATTING
+   =================================== */
+
+/* Markdown-style formatting visualization */
+.grimoire-editor {
+  font-family: 'Crimson Text', 'Merriweather', Georgia, serif;
+}
+
+/* Bold text - **text** */
+.grimoire-editor strong,
+.grimoire-editor b {
+  font-weight: 700;
+  color: #fafafa;
+}
+
+/* Italic text - *text* */
+.grimoire-editor em,
+.grimoire-editor i {
+  font-style: italic;
+  color: #e4e4e7;
+}
+
+/* Strikethrough (Redaction) - ~~text~~ */
+.grimoire-editor del,
+.grimoire-editor s {
+  text-decoration: none;
+  background: linear-gradient(to bottom, transparent 40%, #000 40%, #000 60%, transparent 60%);
+  color: transparent;
+  position: relative;
+  padding: 0 2px;
+}
+
+/* Highlight (Bloody) - ==text== */
+.grimoire-editor mark {
+  background: linear-gradient(to bottom, 
+    rgba(220, 38, 38, 0.3) 0%, 
+    rgba(220, 38, 38, 0.4) 50%, 
+    rgba(220, 38, 38, 0.3) 100%
+  );
+  color: #fca5a5;
+  padding: 2px 4px;
+  border-radius: 2px;
+  text-shadow: 0 0 8px rgba(220, 38, 38, 0.5);
+}
+
+/* Formatting toolbar animations */
+@keyframes toolbar-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+  /* Liquid Shimmer Animation for Progress Bar */
+  @keyframes shimmer {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Subtle Pulse Animation for Blood Progress */
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+    50% {
+      opacity: 0.9;
+      filter: brightness(1.1);
+    }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 3s ease-in-out infinite;
+  }
+}
+}
+/*
+ Settings-based CSS Variables */
+:root {
+  --editor-font-family: 'Inter', sans-serif;
+  --editor-font-size: 16px;
+}
+
+/* Ghost Mode Styles */
+body.ghost-mode {
+  filter: grayscale(0.3) contrast(1.1);
+}
+
+body.ghost-mode * {
+  transition: all 0.3s ease;
+}
+
+body.ghost-mode .ghost-mode-fade {
+  opacity: 0.7;
+}
+
+body.ghost-mode .ghost-mode-hide {
+  opacity: 0.3;
+}
+
+/* Apply editor font settings */
+.editor-content,
+.tiptap,
+.ProseMirror,
+textarea.editor-textarea {
+  font-family: var(--editor-font-family) !important;
+  font-size: var(--editor-font-size) !important;
 }

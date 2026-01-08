@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cursor Diagnostic Tool</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        #output {
+            white-space: pre-wrap;
+            background: #000;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .warning {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .info {
+            color: #00ffff;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Cursor Diagnostic Tool</h1>
+    <p>This tool will help you find elements blocking your cursor.</p>
+    
+    <button onclick="runDiagnostic()">Run Diagnostic</button>
+    <button onclick="highlightOverlays()">Highlight Overlays</button>
+    <button onclick="fixCommonIssues()">Auto-Fix Common Issues</button>
+    
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const className = type === 'warning' ? 'warning' : type === 'error' ? 'warning' : 'info';
+            output.innerHTML += `<div class="${className}">${message}</div>`;
+        }
+
+        function runDiagnostic() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<h2>🔍 DIAGNOSTIC REPORT</h2>';
+            
+            // Check 1: Find all fixed position elements
+            log('\n=== FIXED POSITION ELEMENTS ===');
+            const allElements = document.querySelectorAll('*');
+            const fixedElements = [];
+            
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                if (style.position === 'fixed') {
+                    const rect = el.getBoundingClientRect();
+                    const isFullScreen = rect.width >= window.innerWidth * 0.9 && rect.height >= window.innerHeight * 0.9;
+                    const zIndex = style.zIndex;
+                    const pointerEvents = style.pointerEvents;
+                    const cursor = style.cursor;
+                    
+                    fixedElements.push({
+                        element: el,
+                        tag: el.tagName,
+                        classes: el.className,
+                        zIndex,
+                        pointerEvents,
+                        cursor,
+                        isFullScreen,
+                        rect
+                    });
+                }
+            });
+            
+            log(`Found ${fixedElements.length} fixed position elements`);
+            
+            fixedElements.forEach((item, i) => {
+                const warning = item.isFullScreen && item.pointerEvents !== 'none';
+                log(`\n[${i + 1}] ${item.tag}.${item.classes}`, warning ? 'warning' : 'info');
+                log(`  - Z-Index: ${item.zIndex}`);
+                log(`  - Pointer Events: ${item.pointerEvents}${warning ? ' ⚠️ BLOCKING!' : ''}`);
+                log(`  - Cursor: ${item.cursor}`);
+                log(`  - Full Screen: ${item.isFullScreen}`);
+                log(`  - Size: ${Math.round(item.rect.width)}x${Math.round(item.rect.height)}`);
+                
+                if (warning) {
+                    log(`  ⚠️ THIS ELEMENT IS LIKELY BLOCKING YOUR CURSOR!`, 'warning');
+                }
+            });
+            
+            // Check 2: Cursor style on body/html
+            log('\n=== CURSOR STYLES ===');
+            log(`HTML cursor: ${window.getComputedStyle(document.documentElement).cursor}`);
+            log(`Body cursor: ${window.getComputedStyle(document.body).cursor}`);
+            
+            // Check 3: Elements with cursor: none
+            log('\n=== ELEMENTS WITH cursor: none ===');
+            let cursorNoneCount = 0;
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                if (style.cursor === 'none') {
+                    cursorNoneCount++;
+                    const rect = el.getBoundingClientRect();
+                    if (rect.width > 100 || rect.height > 100) {
+                        log(`${el.tagName}.${el.className} (${Math.round(rect.width)}x${Math.round(rect.height)})`, 'warning');
+                    }
+                }
+            });
+            log(`Total elements with cursor:none: ${cursorNoneCount}`);
+            
+            // Check 4: High z-index elements
+            log('\n=== HIGH Z-INDEX ELEMENTS (>1000) ===');
+            allElements.forEach(el => {
+                const zIndex = parseInt(window.getComputedStyle(el).zIndex);
+                if (zIndex > 1000) {
+                    const rect = el.getBoundingClientRect();
+                    const pointerEvents = window.getComputedStyle(el).pointerEvents;
+                    log(`${el.tagName}.${el.className} - z:${zIndex}, pointer-events:${pointerEvents}`);
+                }
+            });
+            
+            log('\n=== DIAGNOSTIC COMPLETE ===');
+        }
+
+        function highlightOverlays() {
+            const allElements = document.querySelectorAll('*');
+            let count = 0;
+            
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                const rect = el.getBoundingClientRect();
+                const isFullScreen = rect.width >= window.innerWidth * 0.9 && rect.height >= window.innerHeight * 0.9;
+                
+                if ((style.position === 'fixed' || style.position === 'absolute') && isFullScreen) {
+                    el.style.outline = '5px solid red';
+                    el.style.outlineOffset = '-5px';
+                    count++;
+                }
+            });
+            
+            alert(`Highlighted ${count} potential overlay elements with RED borders`);
+        }
+
+        function fixCommonIssues() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<h2>🔧 AUTO-FIX REPORT</h2>';
+            
+            const allElements = document.querySelectorAll('*');
+            let fixCount = 0;
+            
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                const rect = el.getBoundingClientRect();
+                const isFullScreen = rect.width >= window.innerWidth * 0.9 && rect.height >= window.innerHeight * 0.9;
+                
+                // Fix 1: Full-screen fixed elements should have pointer-events: none
+                if (style.position === 'fixed' && isFullScreen && style.pointerEvents !== 'none') {
+                    // Check if it's a video or background element
+                    if (el.tagName === 'VIDEO' || el.classList.contains('background') || el.classList.contains('overlay')) {
+                        el.style.pointerEvents = 'none';
+                        log(`✅ Fixed: ${el.tagName}.${el.className} - Added pointer-events: none`);
+                        fixCount++;
+                    }
+                }
+                
+                // Fix 2: Remove cursor: none from large elements
+                if (style.cursor === 'none' && (rect.width > 200 || rect.height > 200)) {
+                    el.style.cursor = 'default';
+                    log(`✅ Fixed: ${el.tagName}.${el.className} - Changed cursor from none to default`);
+                    fixCount++;
+                }
+            });
+            
+            // Fix 3: Ensure body has default cursor
+            document.body.style.cursor = 'default';
+            document.documentElement.style.cursor = 'default';
+            log(`✅ Fixed: Set body and html cursor to default`);
+            fixCount++;
+            
+            log(`\n=== APPLIED ${fixCount} FIXES ===`);
+            log('If your cursor is still invisible, check the diagnostic report for specific elements.');
+        }
+    </script>
+</body>
+</html>

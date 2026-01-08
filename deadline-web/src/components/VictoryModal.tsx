@@ -18,8 +18,9 @@ export function VictoryModal({ wpm, skulls, reward, onContinue, onShowAuth }: Vi
       {/* Golden Particle Explosion */}
       <VictoryCelebration />
       
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 animate-in fade-in duration-500">
-        <div className="relative bg-black/80 backdrop-blur-xl border-4 border-orange-700 rounded-lg p-12 max-w-md w-full text-center shadow-2xl shadow-orange-900/50 animate-in zoom-in duration-500">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm animate-in fade-in duration-500">
+        <div className="flex min-h-full items-center justify-center p-4">
+          <div className="relative bg-black/80 backdrop-blur-xl border-4 border-orange-700 rounded-lg p-12 max-w-md w-full text-center shadow-2xl shadow-orange-900/50 animate-in zoom-in duration-500">
         {/* Glowing Border Effect */}
         <div className="absolute -inset-1 rounded-lg border-4 border-orange-500 blur-sm opacity-50"></div>
         
@@ -30,7 +31,7 @@ export function VictoryModal({ wpm, skulls, reward, onContinue, onShowAuth }: Vi
           </h2>
           <p className="text-zinc-400 italic mb-10 font-serif">The Muse is appeased... for now.</p>
 
-          {/* Skulls Earned - Larger and More Prominent */}
+          {/* Skulls Earned - Carved Bone Sockets */}
           <div className="flex justify-center gap-6 mb-10">
             {[...Array(3)].map((_, index) => (
               <Skull
@@ -39,18 +40,23 @@ export function VictoryModal({ wpm, skulls, reward, onContinue, onShowAuth }: Vi
                 className={
                   index < skulls
                     ? 'text-amber-500 drop-shadow-[0_0_20px_rgba(245,158,11,0.9)] animate-pulse'
-                    : 'text-zinc-700'
+                    : 'text-zinc-800 opacity-40'
+                }
+                style={
+                  index >= skulls
+                    ? { filter: 'drop-shadow(inset 0 2px 4px rgba(0,0,0,0.5))' }
+                    : undefined
                 }
               />
             ))}
           </div>
 
-          {/* Final WPM - De-boxed and Centered */}
+          {/* Final WPM - Floating in the Void */}
           <div className="mb-10 text-center">
-            <p className="text-xs uppercase tracking-widest text-zinc-500 mb-2">
+            <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
               FINAL VELOCITY
             </p>
-            <p className="text-7xl font-creepster text-white drop-shadow-md">
+            <p className="text-8xl font-creepster text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)] animate-pulse">
               {wpm}
             </p>
           </div>
@@ -118,9 +124,10 @@ export function VictoryModal({ wpm, skulls, reward, onContinue, onShowAuth }: Vi
             PROCEED TO MAP
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
+          </div>
         </div>
       </div>
-    </div>
+      </div>
     </>
   );
 }

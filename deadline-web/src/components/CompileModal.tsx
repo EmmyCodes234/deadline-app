@@ -14,7 +14,7 @@ interface CompileModalProps {
 export function CompileModal({ isOpen, onClose, cryptItems, projectTitle }: CompileModalProps) {
   const [fileName, setFileName] = useState(projectTitle);
   const [includeTitlePage, setIncludeTitlePage] = useState(true);
-  const [includeTableOfContents, setIncludeTableOfContents] = useState(false);
+  const [includeTableOfContents] = useState(false);
   const [mausoleumPageBreak, setMausoleumPageBreak] = useState(false);
   const [tombstonePageBreak, setTombstonePageBreak] = useState(true);
   const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
@@ -84,8 +84,9 @@ export function CompileModal({ isOpen, onClose, cryptItems, projectTitle }: Comp
   const selectedCount = flatItems.length - excludedIds.size;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-stone-900 border-2 border-orange-500/50 rounded-lg shadow-2xl shadow-orange-500/20 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="bg-stone-900 border-2 border-orange-500/50 rounded-lg shadow-2xl shadow-orange-500/20 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex-none p-6 border-b-2 border-stone-800">
           <div className="flex items-center justify-between">
@@ -259,6 +260,7 @@ export function CompileModal({ isOpen, onClose, cryptItems, projectTitle }: Comp
           </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

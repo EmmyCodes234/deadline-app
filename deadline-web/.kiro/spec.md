@@ -1,5 +1,7 @@
 # Project Specification Document: DeadLine Core Logic
 
+> **Note:** This document contains core system specifications. For feature-specific specs, see `.kiro/specs/[feature-name]/`. For a complete overview, see `.kiro/specs/README.md`.
+
 ## 1. The Reaper Engine (`useReaper` Hook)
 
 **Purpose:** Manages the game timer, status, and dynamic decay based on user input.

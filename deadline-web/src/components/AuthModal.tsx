@@ -91,9 +91,10 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-300">
-      {/* Modal Dialog */}
-      <div className="relative w-full max-w-md mx-4 bg-stone-900 border-4 border-purple-900/50 rounded-lg shadow-2xl shadow-purple-900/50 animate-in zoom-in duration-300">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-sm animate-in fade-in duration-300 pointer-events-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        {/* Modal Dialog */}
+        <div className="relative w-full max-w-md bg-stone-900 border-4 border-purple-900/50 rounded-lg shadow-2xl shadow-purple-900/50 animate-in zoom-in duration-300">
         {/* Glowing Border Effect */}
         <div className="absolute -inset-1 rounded-lg border-2 border-purple-500/30 blur-sm"></div>
 
@@ -252,6 +253,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

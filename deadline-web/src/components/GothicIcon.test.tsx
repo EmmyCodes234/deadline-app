@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import * as fc from 'fast-check';
-import { GothicIcon, VARIANTS, SIZES } from './GothicIcon';
+import { GothicIcon, SIZES } from './GothicIcon';
 import type { GothicIconVariant, GothicIconSize } from './GothicIcon';
 import { Skull } from 'lucide-react';
 

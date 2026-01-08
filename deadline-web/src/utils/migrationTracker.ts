@@ -8,7 +8,7 @@
  */
 
 import { iconRegistry, getMigrationStats, getIconsByCategory, getUnmigratedIcons } from '@/data/iconRegistry';
-import { IconRegistryEntry } from '@/types/iconRegistry';
+import type { IconRegistryEntry } from '@/types/iconRegistry';
 
 /**
  * Category migration status

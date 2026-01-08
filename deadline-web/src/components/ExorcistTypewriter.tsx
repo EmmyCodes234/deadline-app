@@ -57,17 +57,7 @@ export function ExorcistTypewriter() {
     }
   }, [activeEntity, gameState, setAtmosphereVolume]);
 
-  // Get ghost image source based on position
-  const getGhostImageSrc = (position: number): string => {
-    if (position < 30) return '/assets/ghosts/ghost-far.png';
-    if (position < 70) return '/assets/ghosts/ghost-medium.png';
-    return '/assets/ghosts/ghost-close.png';
-  };
 
-  // Calculate scale based on position for smooth zoom effect
-  const getGhostScale = (position: number): number => {
-    return 0.5 + (position / 100) * 2; // Scale from 0.5 to 2.5
-  };
 
   // Handle keyboard input
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

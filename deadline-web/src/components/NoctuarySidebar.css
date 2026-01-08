@@ -1,0 +1,131 @@
+/**
+ * NoctuarySidebar Styles
+ * Gothic horror theme with subtle parchment texture
+ * Requirements: 10.1, 10.4 - Subtle theme, proper contrast, gothic scrollbars
+ */
+
+.noctuary-sidebar {
+  width: 280px;
+  height: 100%;
+  /* Dark color scheme with worn leather texture overlay */
+  background: 
+    linear-gradient(
+      to bottom,
+      rgba(20, 16, 12, 0.95),
+      rgba(28, 24, 20, 0.95)
+    ),
+    url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='5' seed='7' /%3E%3CfeColorMatrix type='saturate' values='0.2'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23leather)' opacity='0.08' fill='%23a0826d'/%3E%3C/svg%3E");
+  background-size: auto, 200px 200px;
+  background-attachment: scroll, fixed;
+  /* Softer book binding border with double-border effect */
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.3), 2px 0 8px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  /* Crimson Text font for readability */
+  font-family: 'Crimson Text', Georgia, serif;
+  /* Proper contrast - 4.5:1 minimum */
+  color: rgba(255, 248, 240, 0.9);
+  transition: opacity 0.3s ease;
+}
+
+/* Gothic scrollbar styling - Requirement 10.1 */
+.noctuary-sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.noctuary-sidebar::-webkit-scrollbar-track {
+  background: rgba(20, 16, 12, 0.5);
+  border-left: 1px solid rgba(139, 92, 46, 0.2);
+}
+
+.noctuary-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(87, 83, 78, 0.6);
+  border-radius: 2px;
+  border: 1px solid rgba(139, 92, 46, 0.3);
+}
+
+.noctuary-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 46, 0.7);
+  border-color: rgba(139, 92, 46, 0.5);
+}
+
+/* Firefox scrollbar */
+.noctuary-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(87, 83, 78, 0.6) rgba(20, 16, 12, 0.5);
+}
+
+/* Document list items */
+.document-item,
+.folder-item {
+  font-family: 'Crimson Text', Georgia, serif;
+  color: rgba(255, 248, 240, 0.85);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.document-item:hover,
+.folder-item:hover {
+  background-color: rgba(139, 92, 46, 0.15);
+  color: rgba(255, 248, 240, 0.95);
+}
+
+.document-item.active {
+  background-color: rgba(139, 92, 46, 0.25);
+  color: rgba(255, 248, 240, 1);
+  border-left: 3px solid rgba(139, 92, 46, 0.8);
+}
+
+/* Search input */
+.sidebar-search-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 248, 240, 0.9);
+  font-family: 'Crimson Text', Georgia, serif;
+  transition: border-color 0.2s ease;
+}
+
+.sidebar-search-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-search-input::placeholder {
+  color: rgba(255, 248, 240, 0.4);
+}
+
+/* Buttons */
+.sidebar-button {
+  background: rgba(139, 92, 46, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 248, 240, 0.9);
+  font-family: 'Crimson Text', Georgia, serif;
+  transition: all 0.2s ease;
+}
+
+.sidebar-button:hover {
+  background: rgba(139, 92, 46, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 248, 240, 1);
+}
+
+.sidebar-button:active {
+  background: rgba(139, 92, 46, 0.4);
+}
+
+/* Focus mode opacity */
+.noctuary-sidebar.focus-mode {
+  opacity: 0.3;
+}
+
+.noctuary-sidebar.focus-mode:hover {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .noctuary-sidebar {
+    width: 100%;
+    max-width: 320px;
+  }
+}

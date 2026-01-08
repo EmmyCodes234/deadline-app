@@ -1,44 +1,45 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { horrorAudio } from '@/lib/audio/HorrorAudio';
 
 export function PageTransition() {
   const location = useLocation();
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [flashWhite, setFlashWhite] = useState(false);
 
   useEffect(() => {
-    // Trigger transition on route change
+    // Trigger smooth transition on route change
     const handleTransition = async () => {
-      // 1. Show black overlay immediately
       setIsTransitioning(true);
-      setFlashWhite(false);
       
-      // Play static zap sound (after user interaction)
-      horrorAudio.playStaticZap();
+      // Play subtle transition sound
+      try {
+        horrorAudio.playStaticZap();
+      } catch (error) {
+        // Silent fail if audio not ready
+      }
       
-      // 2. Wait 100ms
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for fade out animation
+      await new Promise(resolve => setTimeout(resolve, 400));
       
-      // 3. Flash white for 50ms
-      setFlashWhite(true);
-      await new Promise(resolve => setTimeout(resolve, 50));
-      
-      // 4. Remove overlay
+      // Remove overlay (fade in will happen automatically)
       setIsTransitioning(false);
-      setFlashWhite(false);
     };
 
     handleTransition();
   }, [location.pathname]);
 
-  if (!isTransitioning) return null;
-
   return (
-    <div
-      className={`fixed inset-0 z-[100] pointer-events-none transition-colors duration-0 ${
-        flashWhite ? 'bg-white' : 'bg-black'
-      }`}
-    />
+    <AnimatePresence>
+      {isTransitioning && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-0 z-[100] pointer-events-none bg-black"
+        />
+      )}
+    </AnimatePresence>
   );
 }

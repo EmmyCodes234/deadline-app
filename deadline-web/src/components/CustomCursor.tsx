@@ -1,11 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { Feather } from 'lucide-react';
 
 export function CustomCursor() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const animationFrameRef = useRef<number | undefined>(undefined);
 
   // Track mouse position
   useEffect(() => {
@@ -26,34 +25,6 @@ export function CustomCursor() {
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
-
-  // Spring animation for cursor follower
-  useEffect(() => {
-    const animate = () => {
-      setCursorPos((prev) => {
-        const dx = mousePos.x - prev.x;
-        const dy = mousePos.y - prev.y;
-        
-        // Spring physics - cursor drags behind with easing
-        const spring = 0.15; // Lower = more drag
-        
-        return {
-          x: prev.x + dx * spring,
-          y: prev.y + dy * spring,
-        };
-      });
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [mousePos]);
 
   // Track hover state for interactive elements
   useEffect(() => {
@@ -96,28 +67,28 @@ export function CustomCursor() {
   }, []);
 
   return (
-    <div
-      className="fixed top-0 left-0 pointer-events-none z-[9999] transition-opacity duration-300"
-      style={{
-        opacity: isVisible ? 1 : 0,
-      }}
-    >
-      {/* Custom Cursor Follower */}
+    <>
+      {/* Flashlight effect removed - editor is readable without it */}
+
+      {/* Quill Cursor - Positioned to match system cursor exactly */}
       <div
-        className={`absolute rounded-full transition-all duration-200 ${
-          isHovering
-            ? 'w-8 h-8 bg-white/80 blur-[2px] scale-150'
-            : 'w-2 h-2 bg-red-500 blur-[1px]'
-        }`}
+        className="fixed pointer-events-none z-[9999] transition-opacity duration-300"
         style={{
-          left: `${cursorPos.x}px`,
-          top: `${cursorPos.y}px`,
-          transform: 'translate(-50%, -50%)',
-          boxShadow: isHovering
-            ? '0 0 20px rgba(255, 255, 255, 0.6)'
-            : '0 0 10px rgba(239, 68, 68, 0.8)',
+          left: `${mousePos.x}px`,
+          top: `${mousePos.y}px`,
+          transform: 'translate(-2px, -2px) rotate(-15deg)', // Adjusted to match cursor hotspot
+          opacity: isVisible ? 1 : 0,
         }}
-      />
-    </div>
+      >
+        <Feather
+          className={`transition-all duration-200 ${
+            isHovering
+              ? 'w-5 h-5 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]'
+              : 'w-4 h-4 text-purple-300 drop-shadow-[0_0_4px_rgba(216,180,254,0.6)]'
+          }`}
+          strokeWidth={2}
+        />
+      </div>
+    </>
   );
 }

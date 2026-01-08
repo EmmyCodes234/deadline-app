@@ -9,7 +9,6 @@ import React from 'react';
 import { GothicIcon } from './GothicIcon';
 import {
   Skull,
-  Flame,
   BookOpen,
   User,
   Settings,
@@ -18,7 +17,6 @@ import {
   Save,
   Plus,
   ArrowLeft,
-  Menu,
   X,
   Heart,
   Zap,
@@ -170,7 +168,7 @@ export const DecorativeIconExample: React.FC = () => {
     <div className="space-y-4">
       {/* Page header with decorative icon */}
       <h1 className="flex items-center gap-3 text-3xl font-bold">
-        <GothicIcon variant="arcane" size="xl" aria-hidden="true">
+        <GothicIcon variant="arcane" size="xl" aria-hidden={true}>
           <BookOpen />
         </GothicIcon>
         <span>Grimoire Editor</span>
@@ -178,7 +176,7 @@ export const DecorativeIconExample: React.FC = () => {
 
       {/* Status message with decorative icon */}
       <div className="flex items-center gap-2 text-green-400">
-        <GothicIcon variant="soul" size="sm" aria-hidden="true">
+        <GothicIcon variant="soul" size="sm" aria-hidden={true}>
           <CheckCircle />
         </GothicIcon>
         <span>Story saved successfully</span>
@@ -186,7 +184,7 @@ export const DecorativeIconExample: React.FC = () => {
 
       {/* Skull score display */}
       <div className="flex items-center gap-2 text-amber-300">
-        <GothicIcon variant="relic" size="md" aria-hidden="true">
+        <GothicIcon variant="relic" size="md" aria-hidden={true}>
           <Skull />
         </GothicIcon>
         <span className="text-2xl font-bold">1,250</span>
@@ -195,7 +193,7 @@ export const DecorativeIconExample: React.FC = () => {
 
       {/* Word count display */}
       <div className="flex items-center gap-2 text-purple-400">
-        <GothicIcon variant="arcane" size="sm" aria-hidden="true">
+        <GothicIcon variant="arcane" size="sm" aria-hidden={true}>
           <Hash />
         </GothicIcon>
         <span>2,847 words</span>
@@ -228,7 +226,7 @@ export const ModeSelectionExample: React.FC = () => {
         `}
       >
         <div className="flex flex-col items-center gap-4">
-          <GothicIcon variant="blood" size="xl" aria-hidden="true">
+          <GothicIcon variant="blood" size="xl" aria-hidden={true}>
             <Skull />
           </GothicIcon>
           <h3 className="text-xl font-bold">Haunting Ritual</h3>
@@ -250,7 +248,7 @@ export const ModeSelectionExample: React.FC = () => {
         `}
       >
         <div className="flex flex-col items-center gap-4">
-          <GothicIcon variant="arcane" size="xl" aria-hidden="true">
+          <GothicIcon variant="arcane" size="xl" aria-hidden={true}>
             <BookOpen />
           </GothicIcon>
           <h3 className="text-xl font-bold">Grimoire Editor</h3>
@@ -275,7 +273,7 @@ export const StatusIndicatorExample: React.FC = () => {
     <div className="space-y-3">
       {/* Success state */}
       <div className="flex items-center gap-2 p-3 bg-green-900/20 border border-green-700 rounded">
-        <GothicIcon variant="soul" size="md" aria-hidden="true">
+        <GothicIcon variant="soul" size="md" aria-hidden={true}>
           <CheckCircle />
         </GothicIcon>
         <span className="text-green-400">Changes saved successfully</span>
@@ -283,7 +281,7 @@ export const StatusIndicatorExample: React.FC = () => {
 
       {/* Error state */}
       <div className="flex items-center gap-2 p-3 bg-red-900/20 border border-red-700 rounded">
-        <GothicIcon variant="blood" size="md" aria-hidden="true">
+        <GothicIcon variant="blood" size="md" aria-hidden={true}>
           <AlertTriangle />
         </GothicIcon>
         <span className="text-red-400">Failed to save changes</span>
@@ -417,7 +415,7 @@ export const GameStatsExample: React.FC = () => {
     <div className="flex items-center gap-6 p-4 bg-gray-800 rounded-lg">
       {/* Patience/Sanity */}
       <div className="flex items-center gap-2">
-        <GothicIcon variant="blood" size="md" aria-hidden="true">
+        <GothicIcon variant="blood" size="md" aria-hidden={true}>
           <Heart />
         </GothicIcon>
         <div>
@@ -428,7 +426,7 @@ export const GameStatsExample: React.FC = () => {
 
       {/* Speed/WPM */}
       <div className="flex items-center gap-2">
-        <GothicIcon variant="blood" size="md" aria-hidden="true">
+        <GothicIcon variant="blood" size="md" aria-hidden={true}>
           <Zap />
         </GothicIcon>
         <div>
@@ -439,7 +437,7 @@ export const GameStatsExample: React.FC = () => {
 
       {/* Skull Score */}
       <div className="flex items-center gap-2">
-        <GothicIcon variant="relic" size="md" aria-hidden="true">
+        <GothicIcon variant="relic" size="md" aria-hidden={true}>
           <Skull />
         </GothicIcon>
         <div>
@@ -469,7 +467,7 @@ export const ModalHeaderExample: React.FC = () => {
         {/* Modal header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <div className="flex items-center gap-3">
-            <GothicIcon variant="soul" size="lg" aria-hidden="true">
+            <GothicIcon variant="soul" size="lg" aria-hidden={true}>
               <Settings />
             </GothicIcon>
             <h2 className="text-xl font-bold">Settings</h2>
@@ -512,7 +510,7 @@ export const AchievementCardExample: React.FC = () => {
           <p className="text-gray-400 mt-2">First Story Completed</p>
         </div>
         <div className="flex items-center gap-2 text-amber-300">
-          <GothicIcon variant="relic" size="md" aria-hidden="true">
+          <GothicIcon variant="relic" size="md" aria-hidden={true}>
             <Skull />
           </GothicIcon>
           <span className="text-xl font-bold">+500</span>

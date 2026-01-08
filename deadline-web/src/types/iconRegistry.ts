@@ -1,5 +1,5 @@
-import { LucideIcon } from 'lucide-react';
-import { GothicIconVariant } from '@/components/GothicIcon';
+import type { LucideIcon } from 'lucide-react';
+import type { GothicIconVariant } from '@/components/GothicIcon';
 
 /**
  * Icon registry entry for tracking icon usage and migration status

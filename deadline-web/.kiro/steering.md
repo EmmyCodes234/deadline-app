@@ -5,10 +5,10 @@
 - **UI Inspiration:** Ancient, powerful artifacts (obsidian, dark metals, glowing runes, smoky glass), haunted typewriters, decaying grimoires.
 - **Overall Feel:** Immersive, high-contrast, atmospheric, with subtle animations.
 
-## 2. Brand Identity: DEADLINE
-- **Product Name:** DEADLINE (Always capitalized, bold, prominent).
-- **Tagline:** "WRITE OR DIE." (Always present with brand, distinct typography).
-- **Core Concept:** High-stakes writing editor that punishes hesitation.
+## 2. Brand Identity: EPITAPH
+- **Product Name:** EPITAPH (Always capitalized, bold, prominent).
+- **Tagline:** "WORDS CARVED IN STONE." (Always present with brand, distinct typography).
+- **Core Concept:** Gothic writing experience where every keystroke echoes through eternity.
 
 ## 3. Color Palette (Tailwind CSS):
 - **Primary Accent (Danger/Call to Action):** `bg-pumpkin` (Orange: `#FF7518`), `text-pumpkin`.

@@ -142,7 +142,7 @@ export function ModeSelectionScreen({ onSelectMode }: ModeSelectionScreenProps) 
             <div className="flex flex-col items-center gap-2 relative z-20">
               <span className="text-3xl md:text-4xl">⚡ ENTER THE HAUNTING</span>
               <span className="text-sm md:text-base font-sans font-normal opacity-80">
-                {isHoldingHaunting ? 'Hold to seal the pact...' : 'Timed Mode • Write or Die'}
+                {isHoldingHaunting ? 'Hold to seal the pact...' : 'Timed Mode • Words Carved in Stone'}
               </span>
             </div>
           </button>

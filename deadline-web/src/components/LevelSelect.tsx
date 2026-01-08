@@ -3,12 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GAME_LEVELS, type GamePart } from '../data/gameLevels';
 import { useGameProgress } from '../hooks/useGameProgress';
 import { Skull, Lock, Play, X, Check, Medal, RotateCcw } from 'lucide-react';
-import ElectricBorder from './ui/ElectricBorder';
 import { horrorAudio } from '@/lib/audio/HorrorAudio';
 
 interface LevelSelectProps {
   onStartPart: (part: GamePart, levelId: number) => void;
 }
+
+// Convert number to Roman numerals
+const toRoman = (num: number): string => {
+  const romanNumerals: [number, string][] = [
+    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+  ];
+  let result = '';
+  for (const [value, numeral] of romanNumerals) {
+    while (num >= value) {
+      result += numeral;
+      num -= value;
+    }
+  }
+  return result;
+};
 
 export function LevelSelect({ onStartPart }: LevelSelectProps) {
   const [selectedLevelId, setSelectedLevelId] = useState<number | null>(null);
@@ -21,10 +35,13 @@ export function LevelSelect({ onStartPart }: LevelSelectProps) {
 
   return (
     <div className="min-h-screen bg-[url('/bg-graveyard.jpg')] bg-cover bg-center bg-fixed relative flex justify-center pt-20 pb-10 px-4">
-      {/* Dark overlay with subtle grain texture */}
-      <div className="absolute inset-0 bg-black/85" />
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" 
-           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} 
+      {/* Dark overlay with granite texture */}
+      <div 
+        className="absolute inset-0" 
+        style={{
+          backgroundColor: '#1a1a1a',
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.15\'/%3E%3C/svg%3E")'
+        }}
       />
       
       {/* Enhanced Vignette */}
@@ -42,7 +59,12 @@ export function LevelSelect({ onStartPart }: LevelSelectProps) {
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="font-creepster text-7xl md:text-9xl tracking-widest mb-3 relative inline-block text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-500 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]" 
+            className="text-7xl md:text-9xl tracking-widest mb-3 relative inline-block"
+            style={{
+              fontFamily: 'Creepster, cursive',
+              color: '#e8e8e3',
+              textShadow: '0 4px 10px black'
+            }}
           >
             THE PATH OF THE DAMNED
           </motion.h1>
@@ -50,7 +72,13 @@ export function LevelSelect({ onStartPart }: LevelSelectProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-zinc-400 text-lg tracking-[0.3em] uppercase font-light"
+            className="text-lg uppercase"
+            style={{
+              fontFamily: 'IM Fell English, serif',
+              color: '#e8e8e3',
+              letterSpacing: '0.2em',
+              textShadow: '0 4px 10px black'
+            }}
           >
             Choose your descent into darkness...
           </motion.p>
@@ -75,15 +103,89 @@ export function LevelSelect({ onStartPart }: LevelSelectProps) {
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: actIndex * 0.1 + 0.2 }}
-                    className="font-['Creepster'] text-3xl text-zinc-400 tracking-widest"
+                    className="text-2xl"
+                    style={{
+                      fontFamily: 'IM Fell English, serif',
+                      color: '#e8e8e3',
+                      letterSpacing: '0.2em',
+                      textShadow: '0 4px 10px black'
+                    }}
                   >
                     {act}
                   </motion.h2>
                   <div className="h-px bg-gradient-to-r from-zinc-800 to-transparent flex-grow" />
                 </div>
 
-                {/* Level Cards Grid - Glassmorphism Style */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {/* Level Cards Grid with Connecting Lines */}
+                <div className="relative grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {/* SVG Connecting Lines - Thread of Fate */}
+                  <svg 
+                    className="absolute inset-0 w-full h-full pointer-events-none" 
+                    style={{ zIndex: 0 }}
+                  >
+                    {actLevels.map((level, index) => {
+                      if (index === actLevels.length - 1) return null;
+                      
+                      const nextLevel = actLevels[index + 1];
+                      const currentUnlocked = isLevelUnlocked(level.id);
+                      const nextUnlocked = isLevelUnlocked(nextLevel.id);
+                      const currentSkulls = getSkullsForLevel(level.id);
+                      const currentMaxSkulls = level.parts.length * 3;
+                      const isCurrentCompleted = currentSkulls === currentMaxSkulls && currentMaxSkulls > 0;
+                      
+                      // Calculate positions (approximate center of each card)
+                      const cols = window.innerWidth >= 1024 ? 5 : window.innerWidth >= 768 ? 4 : 2;
+                      const currentCol = index % cols;
+                      const currentRow = Math.floor(index / cols);
+                      const nextCol = (index + 1) % cols;
+                      const nextRow = Math.floor((index + 1) / cols);
+                      
+                      const cardWidth = 100 / cols;
+                      const x1 = `${(currentCol + 0.5) * cardWidth}%`;
+                      const y1 = `${(currentRow + 0.7) * 100}px`;
+                      const x2 = `${(nextCol + 0.5) * cardWidth}%`;
+                      const y2 = `${(nextRow + 0.3) * 100}px`;
+                      
+                      // Determine line color based on completion
+                      const lineColor = isCurrentCompleted 
+                        ? 'rgba(245, 158, 11, 0.8)' // Gold for completed
+                        : currentUnlocked && nextUnlocked
+                        ? 'rgba(239, 68, 68, 0.8)' // Red for active path
+                        : 'rgba(120, 120, 120, 0.5)'; // Grey for inactive
+                      
+                      const glowColor = isCurrentCompleted 
+                        ? '#f59e0b'
+                        : '#ef4444';
+                      
+                      // Create jagged path (like lightning/heartbeat)
+                      const x1Num = parseFloat(x1);
+                      const x2Num = parseFloat(x2);
+                      const y1Num = parseFloat(y1);
+                      const y2Num = parseFloat(y2);
+                      const midX = (x1Num + x2Num) / 2;
+                      const midY = (y1Num + y2Num) / 2;
+                      const offsetX = (Math.random() - 0.5) * 3;
+                      const offsetY = (Math.random() - 0.5) * 10;
+                      
+                      const pathData = `M ${x1} ${y1} L ${midX + offsetX}% ${midY + offsetY}px L ${x2} ${y2}`;
+                      
+                      return (
+                        <path
+                          key={`line-${level.id}`}
+                          d={pathData}
+                          stroke={lineColor}
+                          strokeWidth="2"
+                          fill="none"
+                          style={{
+                            filter: isCurrentCompleted || (currentUnlocked && nextUnlocked)
+                              ? `drop-shadow(0 0 5px ${glowColor})`
+                              : 'none'
+                          }}
+                        />
+                      );
+                    })}
+                  </svg>
+                  
                 {actLevels.map((level, index) => {
                   const unlocked = isLevelUnlocked(level.id);
                   const skulls = getSkullsForLevel(level.id);
@@ -107,10 +209,10 @@ export function LevelSelect({ onStartPart }: LevelSelectProps) {
                         ease: "easeOut"
                       }}
                       whileHover={unlocked ? { 
-                        scale: 1.05,
-                        transition: { duration: 0.2 }
+                        y: -20,
+                        transition: { duration: 0.3 }
                       } : {}}
-                      whileTap={unlocked ? { scale: 0.98 } : {}}
+                      whileTap={unlocked ? { y: -15 } : {}}
                       onClick={() => {
                         if (unlocked) {
                           horrorAudio.playClick();
@@ -120,70 +222,141 @@ export function LevelSelect({ onStartPart }: LevelSelectProps) {
                       onMouseEnter={() => unlocked && horrorAudio.playHover()}
                       disabled={!unlocked}
                       className={`
-                        w-full aspect-video rounded-lg backdrop-blur-md
-                        flex flex-col items-center justify-center transition-all duration-300 relative group
-                        ${!unlocked ? 'cursor-not-allowed border border-white/5 bg-gradient-to-b from-zinc-900 to-zinc-950 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] gap-2 p-3' : ''}
-                        ${isActive ? 'p-2' : ''}
-                        ${isCompleted || isReplayable ? 'border border-amber-600/50 bg-zinc-900/40 gap-2 p-3 shadow-[0_0_10px_rgba(217,119,6,0.2)]' : ''}
+                        w-full aspect-[3/4] flex flex-col items-center justify-center transition-all duration-300 relative group
+                        ${!unlocked ? 'cursor-not-allowed gap-2 p-3' : ''}
+                        ${isActive ? 'gap-2 p-3' : ''}
+                        ${isCompleted || isReplayable ? 'gap-2 p-3' : ''}
                       `}
+                      style={{
+                        borderRadius: '50% 50% 0 0',
+                        background: isActive 
+                          ? 'radial-gradient(circle at center, #1a0500 40%, #ffaa00 150%)'
+                          : isCompleted || isReplayable 
+                          ? 'linear-gradient(to bottom, #3a3a3a 0%, #1a1a15 100%)'
+                          : 'linear-gradient(to bottom, #2a2a2a 0%, #111 100%)',
+                        backgroundImage: isCompleted || isReplayable
+                          ? 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.12), transparent 60%), url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.08\'/%3E%3C/svg%3E")'
+                          : isActive
+                          ? 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.08\'/%3E%3C/svg%3E")'
+                          : 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.08\'/%3E%3C/svg%3E")',
+                        boxShadow: isActive 
+                          ? 'inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -10px 20px rgba(0,0,0,0.8), inset 0 0 40px #ff6600, inset 0 0 10px #ffaa00, 0 0 20px rgba(255, 100, 0, 0.3), 5px 5px 15px rgba(0, 0, 0, 0.5)'
+                          : isCompleted || isReplayable
+                          ? 'inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -10px 20px rgba(0,0,0,0.8)'
+                          : 'inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -10px 20px rgba(0,0,0,0.8), 5px 5px 15px rgba(0, 0, 0, 0.5)',
+                        filter: isCompleted || isReplayable ? 'grayscale(100%) brightness(0.8)' : 'none',
+                        WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                        maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+                      }}
                     >
                       {!unlocked && (
                         <>
                           <Lock className="w-10 h-10 text-zinc-800 opacity-60" />
-                          <span className="text-zinc-600 text-sm font-bold uppercase tracking-widest">Level {level.id}</span>
+                          <span className="text-zinc-600 text-sm font-bold uppercase tracking-widest">R.I.P.</span>
                         </>
                       )}
                       
                       {isActive && (
-                        <ElectricBorder
-                          color="#ff5757"
-                          speed={4}
-                          chaos={0.4}
-                          thickness={3}
-                          className="w-full h-full"
-                          style={{ borderRadius: '0.6rem' }}
-                        >
-                          <div className="w-full h-full bg-zinc-950 rounded-lg border border-white/5 flex flex-col items-center justify-center gap-2 relative z-10 p-6">
-                            <Skull className="w-5 h-5 text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]" />
-                            <h3 className="text-white font-bold text-base uppercase tracking-widest text-center drop-shadow-md px-2 leading-tight">
-                              {level.name}
-                            </h3>
-                            <span className="text-red-500 text-[9px] font-bold tracking-[0.2em]">
-                              LEVEL {level.id}
-                            </span>
-                            <span className="text-zinc-500 text-[10px] font-mono">
-                              {skulls}/{maxSkulls}
-                            </span>
-                          </div>
-                        </ElectricBorder>
+                        <>
+                          <Skull 
+                            className="w-5 h-5"
+                            style={{
+                              color: '#fffef0',
+                              filter: 'drop-shadow(0 2px 0 black) drop-shadow(0 0 10px rgba(0,0,0,0.8))'
+                            }}
+                          />
+                          <h3 
+                            className="font-bold text-base uppercase tracking-widest text-center px-2 leading-tight"
+                            style={{
+                              color: '#fffef0',
+                              textShadow: '0 2px 0 black, 0 0 10px rgba(0,0,0,0.8)'
+                            }}
+                          >
+                            {level.name}
+                          </h3>
+                          <span 
+                            className="text-[9px] font-bold tracking-[0.2em]"
+                            style={{
+                              color: '#ffaa00',
+                              textShadow: '0 2px 0 black, 0 0 10px rgba(0,0,0,0.8)'
+                            }}
+                          >
+                            TRIAL {toRoman(level.id)}
+                          </span>
+                          <span className="text-zinc-500 text-[10px] font-mono">
+                            {skulls} {skulls === 1 ? 'Soul' : 'Souls'}
+                          </span>
+                        </>
                       )}
                       
                       {isCompleted && (
                         <>
-                          <Medal className="w-7 h-7 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
-                          <span className="text-amber-400 font-bold text-sm text-center px-2 leading-tight drop-shadow-md">
+                          <Medal 
+                            className="w-7 h-7"
+                            style={{
+                              color: '#555',
+                              filter: 'drop-shadow(1px 1px 0 rgba(255,255,255,0.1)) drop-shadow(-1px -1px 0 black)'
+                            }}
+                          />
+                          <span 
+                            className="font-bold text-sm text-center px-2 leading-tight"
+                            style={{
+                              color: '#555',
+                              textShadow: '1px 1px 0 rgba(255,255,255,0.1)'
+                            }}
+                          >
                             {level.name}
                           </span>
-                          <div className="flex items-center gap-1 text-xs text-amber-600">
+                          <div 
+                            className="flex items-center gap-1 text-xs"
+                            style={{
+                              color: '#555',
+                              textShadow: '1px 1px 0 rgba(255,255,255,0.1)'
+                            }}
+                          >
                             <Check className="w-3 h-3" />
                             <span>Complete</span>
                           </div>
                           {/* Replay icon on hover */}
-                          <RotateCcw className="w-4 h-4 text-amber-500/0 group-hover:text-amber-500/70 transition-colors absolute top-2 right-2" />
+                          <RotateCcw 
+                            className="w-4 h-4 opacity-0 group-hover:opacity-70 transition-opacity absolute top-2 right-2"
+                            style={{ color: '#555' }}
+                          />
                         </>
                       )}
                       
                       {isReplayable && !isCompleted && (
                         <>
-                          <Skull className="w-6 h-6 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
-                          <span className="text-amber-400 font-bold text-sm text-center px-2 leading-tight drop-shadow-md">
+                          <Skull 
+                            className="w-6 h-6"
+                            style={{
+                              color: '#555',
+                              filter: 'drop-shadow(1px 1px 0 rgba(255,255,255,0.1)) drop-shadow(-1px -1px 0 black)'
+                            }}
+                          />
+                          <span 
+                            className="font-bold text-sm text-center px-2 leading-tight"
+                            style={{
+                              color: '#555',
+                              textShadow: '1px 1px 0 rgba(255,255,255,0.1)'
+                            }}
+                          >
                             {level.name}
                           </span>
-                          <span className="text-amber-600 text-[10px] font-mono">
-                            {skulls}/{maxSkulls}
+                          <span 
+                            className="text-[10px] font-mono"
+                            style={{
+                              color: '#555',
+                              textShadow: '1px 1px 0 rgba(255,255,255,0.1)'
+                            }}
+                          >
+                            {toRoman(skulls)} of {toRoman(maxSkulls)}
                           </span>
                           {/* Replay icon on hover */}
-                          <RotateCcw className="w-4 h-4 text-amber-500/0 group-hover:text-amber-500/70 transition-colors absolute top-2 right-2" />
+                          <RotateCcw 
+                            className="w-4 h-4 opacity-0 group-hover:opacity-70 transition-opacity absolute top-2 right-2"
+                            style={{ color: '#555' }}
+                          />
                         </>
                       )}
                     </motion.button>
@@ -295,7 +468,7 @@ export function LevelSelect({ onStartPart }: LevelSelectProps) {
                           />
                         ))}
                         <span className="text-xs text-zinc-500 ml-1">
-                          {partSkulls}/3
+                          {toRoman(partSkulls)} of III
                         </span>
                       </div>
                     </div>

@@ -25,7 +25,7 @@ const AUDIO_URLS = {
   WHISPER_4: 'https://assets.mixkit.co/active_storage/sfx/2490/2490-preview.mp3',
 };
 
-type AudioChannel = 'music' | 'ambience' | 'sfx';
+// type AudioChannel = 'music' | 'ambience' | 'sfx';
 
 interface AudioSettings {
   musicEnabled: boolean;
@@ -144,7 +144,6 @@ class AudioManager {
   private applySettings(): void {
     // Apply mute/unmute based on settings
     const musicVolume = this.settings.musicEnabled ? this.settings.masterVolume : 0;
-    const ambienceVolume = this.settings.ambienceEnabled ? this.settings.masterVolume : 0;
     const sfxVolume = this.settings.sfxEnabled ? this.settings.masterVolume : 0;
     
     // Update music volumes

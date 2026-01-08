@@ -1,0 +1,171 @@
+/**
+ * Fog of Creation Styles
+ * Atmospheric background fog that drifts slowly
+ */
+
+.fog-of-creation {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  mix-blend-mode: screen;
+}
+
+.fog-layer {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform, opacity;
+}
+
+/* Fog texture using SVG filters */
+.fog-layer-1 {
+  background-image: url("data:image/svg+xml,%3Csvg width='1000' height='1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fog1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008' numOctaves='4' seed='1' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeGaussianBlur stdDeviation='20' /%3E%3C/filter%3E%3Crect width='1000' height='1000' filter='url(%23fog1)' opacity='0.3' fill='%23ffffff'/%3E%3C/svg%3E");
+  animation: fogDrift1 60s linear infinite;
+  opacity: 0.15;
+}
+
+.fog-layer-2 {
+  background-image: url("data:image/svg+xml,%3Csvg width='1000' height='1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fog2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='3' seed='2' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeGaussianBlur stdDeviation='25' /%3E%3C/filter%3E%3Crect width='1000' height='1000' filter='url(%23fog2)' opacity='0.3' fill='%23ffffff'/%3E%3C/svg%3E");
+  animation: fogDrift2 80s linear infinite reverse;
+  opacity: 0.1;
+}
+
+.fog-layer-3 {
+  background-image: url("data:image/svg+xml,%3Csvg width='1000' height='1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fog3'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='5' seed='3' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeGaussianBlur stdDeviation='30' /%3E%3C/filter%3E%3Crect width='1000' height='1000' filter='url(%23fog3)' opacity='0.3' fill='%23ffffff'/%3E%3C/svg%3E");
+  animation: fogDrift3 100s linear infinite;
+  opacity: 0.08;
+}
+
+/* Drift animations - slow, organic movement */
+@keyframes fogDrift1 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-10%, 5%) rotate(2deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes fogDrift2 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(8%, -3%) rotate(-1deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes fogDrift3 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-5%, -8%) rotate(1deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+/* Density variants */
+.fog-light .fog-layer {
+  opacity: 0.05;
+}
+
+.fog-medium .fog-layer-1 {
+  opacity: 0.15;
+}
+
+.fog-medium .fog-layer-2 {
+  opacity: 0.1;
+}
+
+.fog-medium .fog-layer-3 {
+  opacity: 0.08;
+}
+
+.fog-heavy .fog-layer-1 {
+  opacity: 0.25;
+}
+
+.fog-heavy .fog-layer-2 {
+  opacity: 0.18;
+}
+
+.fog-heavy .fog-layer-3 {
+  opacity: 0.12;
+}
+
+/* Color variants */
+.fog-purple .fog-layer {
+  filter: hue-rotate(270deg) saturate(1.5);
+}
+
+.fog-red .fog-layer {
+  filter: hue-rotate(0deg) saturate(1.8);
+}
+
+.fog-blue .fog-layer {
+  filter: hue-rotate(200deg) saturate(1.3);
+}
+
+.fog-neutral .fog-layer {
+  filter: saturate(0.3);
+}
+
+/* Speed variants */
+.fog-slow .fog-layer-1 {
+  animation-duration: 90s;
+}
+
+.fog-slow .fog-layer-2 {
+  animation-duration: 120s;
+}
+
+.fog-slow .fog-layer-3 {
+  animation-duration: 150s;
+}
+
+.fog-medium .fog-layer-1 {
+  animation-duration: 60s;
+}
+
+.fog-medium .fog-layer-2 {
+  animation-duration: 80s;
+}
+
+.fog-medium .fog-layer-3 {
+  animation-duration: 100s;
+}
+
+.fog-fast .fog-layer-1 {
+  animation-duration: 40s;
+}
+
+.fog-fast .fog-layer-2 {
+  animation-duration: 55s;
+}
+
+.fog-fast .fog-layer-3 {
+  animation-duration: 70s;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .fog-layer {
+    animation: none;
+    opacity: 0.05;
+  }
+}

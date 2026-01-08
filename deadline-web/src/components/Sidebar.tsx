@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { type CryptItem } from '@/hooks/useCrypt';
 import clsx from 'clsx';
 import { GothicIcon } from './GothicIcon';
-import { DoorOpen, Trash2, PenTool, BookOpen, ChevronLeft, X } from 'lucide-react';
+import { DoorOpen, Trash2, ChevronLeft, ChevronRight, X, Feather, Folder, FolderOpen, Skull, Plus } from 'lucide-react';
 import { horrorAudio } from '@/lib/audio/HorrorAudio';
 
 interface SidebarProps {
@@ -12,7 +12,7 @@ interface SidebarProps {
   totalProjectWords: number;
   onSelectDoc: (id: string) => void;
   onCreateDoc: (parentId?: string | null) => void;
-  onCreateMausoleum: (title?: string, parentId?: string | null) => void;
+  onCreateMausoleum: (title?: string, parentId?: string | null) => string;
   onDeleteDoc: (id: string) => void;
   onUpdateTitle: (id: string, title: string) => void;
   onToggleExpand: (id: string) => void;
@@ -21,6 +21,8 @@ interface SidebarProps {
   onClose: () => void;
   onToggleSidebar?: () => void; // For desktop collapse
   mode?: 'HAUNTING' | 'GRIMOIRE'; // Optional mode for context-aware UI
+  onExport?: () => void; // Export/compile function
+  onShowHelp?: () => void; // Show keyboard shortcuts
 }
 
 export function Sidebar({
@@ -38,6 +40,8 @@ export function Sidebar({
   onClose,
   onToggleSidebar,
   mode = 'HAUNTING',
+  onExport,
+  onShowHelp,
 }: SidebarProps) {
   // Drag and drop state
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -47,8 +51,68 @@ export function Sidebar({
   // Delete animation state - track which items are animating out
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   
-  // Get root items (no parent)
-  const rootItems = items.filter((item) => !item.parentId);
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    itemId: string;
+    itemType: 'file' | 'folder';
+  } | null>(null);
+  
+  // Renaming state
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+
+  // Close context menu on escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+        setRenamingId(null);
+      }
+    };
+
+    if (contextMenu || renamingId) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [contextMenu, renamingId]);
+  
+  // Helper function to generate smart title from content
+  const getDisplayTitle = (item: CryptItem): string => {
+    // If title exists and is not default, use it
+    if (item.title && item.title.trim() !== '' && item.title !== 'Untitled Haunting') {
+      return item.title;
+    }
+    
+    // If content exists, extract first 4 words
+    if (item.content && item.content.trim() !== '') {
+      const words = item.content
+        .trim()
+        .replace(/\n/g, ' ') // Replace newlines with spaces
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .split(' ')
+        .filter(word => word.length > 0) // Remove empty strings
+        .slice(0, 4); // Take first 4 words
+      
+      if (words.length > 0) {
+        return words.join(' ') + (item.content.trim().split(/\s+/).length > 4 ? '...' : '');
+      }
+    }
+    
+    // Fallback for empty documents
+    return mode === 'GRIMOIRE' ? 'Fresh Parchment' : 'Blank Scroll';
+  };
+  
+  // Get root items (no parent) and filter by search
+  const rootItems = items
+    .filter((item) => !item.parentId)
+    .filter((item) => 
+      searchQuery.trim() === '' || 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   
   // Handle delete with incinerate animation
   const handleDelete = (itemId: string) => {
@@ -142,7 +206,261 @@ export function Sidebar({
     setDropPosition(null);
   };
   
-  // Recursive component to render items
+  // Context menu handlers
+  const handleContextMenu = (e: React.MouseEvent, itemId: string, itemType: 'file' | 'folder') => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      itemId,
+      itemType,
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  const handleContextAction = (action: string, itemId: string) => {
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
+
+    switch (action) {
+      case 'newFile':
+        onCreateDoc(itemId);
+        break;
+      case 'newFolder':
+        const newFolderId = onCreateMausoleum('New Folder', itemId);
+        if (newFolderId) {
+          setRenamingId(newFolderId);
+        }
+        break;
+      case 'rename':
+        setRenamingId(itemId);
+        break;
+      case 'delete':
+        handleDelete(itemId);
+        break;
+    }
+    closeContextMenu();
+  };
+
+  // FileSystemItem component for recursive rendering
+  const FileSystemItem = ({ item, level }: { item: CryptItem; level: number }) => {
+    const isActive = currentDocId === item.id;
+    const isRenaming = renamingId === item.id;
+    
+    if (item.type === 'mausoleum') {
+      // Get children in the order specified by the children array
+      const childItems = (item.children || [])
+        .map((childId) => items.find((i) => i.id === childId))
+        .filter((child): child is CryptItem => child !== undefined);
+      
+      return (
+        <div key={item.id}>
+          {/* Folder Header */}
+          <div
+            draggable={!!onReorderItems}
+            onDragStart={(e) => handleDragStart(e, item.id)}
+            onDragOver={(e) => handleDragOver(e, item.id, 'mausoleum')}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, item.id)}
+            onDragEnd={handleDragEnd}
+            onContextMenu={(e) => handleContextMenu(e, item.id, 'folder')}
+            className={clsx(
+              'group relative flex items-center gap-2 p-2 cursor-pointer transition-all duration-200',
+              'hover:bg-neutral-800 rounded-md',
+              draggedId === item.id && 'opacity-50',
+              dragOverId === item.id && dropPosition === 'before' && 'border-t-2 border-t-orange-500',
+              dragOverId === item.id && dropPosition === 'after' && 'border-b-2 border-b-orange-500',
+              dragOverId === item.id && dropPosition === 'inside' && 'bg-orange-500/20 border border-orange-500',
+              deletingIds.has(item.id) && 'animate-incinerate'
+            )}
+            style={{ paddingLeft: `${level * 16 + 8}px` }}
+          >
+            {/* Tree guide line */}
+            {level > 0 && (
+              <div 
+                className="absolute left-0 top-0 bottom-0 border-l border-white/5"
+                style={{ left: `${(level - 1) * 16 + 16}px` }}
+              />
+            )}
+            
+            {/* Expand/Collapse Chevron */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleExpand(item.id);
+              }}
+              className="flex-shrink-0 text-neutral-500 hover:text-orange-500 transition-colors p-1"
+              aria-label={item.isExpanded ? 'Collapse' : 'Expand'}
+            >
+              <ChevronRight 
+                className={clsx(
+                  'w-4 h-4 transition-transform duration-200',
+                  item.isExpanded && 'rotate-90'
+                )}
+              />
+            </button>
+            
+            {/* Folder Icon */}
+            <div className="flex-shrink-0 text-neutral-500">
+              {item.isExpanded ? (
+                <FolderOpen className="w-4 h-4" />
+              ) : (
+                <Folder className="w-4 h-4" />
+              )}
+            </div>
+            
+            {/* Folder Name */}
+            {isRenaming ? (
+              <input
+                type="text"
+                defaultValue={item.title}
+                autoFocus
+                onBlur={(e) => {
+                  onUpdateTitle(item.id, e.target.value || 'New Folder');
+                  setRenamingId(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    onUpdateTitle(item.id, e.currentTarget.value || 'New Folder');
+                    setRenamingId(null);
+                  } else if (e.key === 'Escape') {
+                    setRenamingId(null);
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="flex-1 bg-neutral-700 border border-orange-500 rounded px-2 py-1 text-sm text-neutral-200 outline-none"
+              />
+            ) : (
+              <span 
+                className="flex-1 text-sm text-neutral-300 font-medium truncate select-none"
+                onClick={() => onToggleExpand(item.id)}
+              >
+                {item.title}
+              </span>
+            )}
+            
+            {/* Delete Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(item.id);
+              }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-neutral-600 hover:text-red-500 rounded"
+              title="Delete folder"
+              aria-label="Delete folder"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+          
+          {/* Children */}
+          {item.isExpanded && (
+            <div>
+              {childItems.map((child) => (
+                <FileSystemItem key={child.id} item={child} level={level + 1} />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // File (Document)
+    return (
+      <div
+        key={item.id}
+        draggable={!!onReorderItems}
+        onDragStart={(e) => handleDragStart(e, item.id)}
+        onDragOver={(e) => handleDragOver(e, item.id, 'tombstone')}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDrop(e, item.id)}
+        onDragEnd={handleDragEnd}
+        onContextMenu={(e) => handleContextMenu(e, item.id, 'file')}
+        className={clsx(
+          'group relative flex items-center gap-2 p-2 cursor-pointer transition-all duration-200',
+          'hover:bg-neutral-800 rounded-md',
+          isActive && 'bg-orange-500/20 text-orange-500',
+          draggedId === item.id && 'opacity-50',
+          dragOverId === item.id && dropPosition === 'before' && 'border-t-2 border-t-orange-500',
+          dragOverId === item.id && dropPosition === 'after' && 'border-b-2 border-b-orange-500',
+          deletingIds.has(item.id) && 'animate-incinerate'
+        )}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={() => onSelectDoc(item.id)}
+      >
+        {/* Tree guide line */}
+        {level > 0 && (
+          <div 
+            className="absolute left-0 top-0 bottom-0 border-l border-white/5"
+            style={{ left: `${(level - 1) * 16 + 16}px` }}
+          />
+        )}
+        
+        {/* File Icon */}
+        <div className="flex-shrink-0 text-neutral-500 ml-6">
+          {isActive ? (
+            <Skull className="w-4 h-4 text-orange-500" />
+          ) : (
+            <Feather className="w-4 h-4" />
+          )}
+        </div>
+        
+        {/* File Name */}
+        {isRenaming ? (
+          <input
+            type="text"
+            defaultValue={getDisplayTitle(item)}
+            autoFocus
+            onBlur={(e) => {
+              onUpdateTitle(item.id, e.target.value || 'Untitled');
+              setRenamingId(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                onUpdateTitle(item.id, e.currentTarget.value || 'Untitled');
+                setRenamingId(null);
+              } else if (e.key === 'Escape') {
+                setRenamingId(null);
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 bg-neutral-700 border border-orange-500 rounded px-2 py-1 text-sm text-neutral-200 outline-none"
+          />
+        ) : (
+          <div className="flex-1 min-w-0">
+            <div className={clsx(
+              'text-sm font-medium truncate',
+              isActive ? 'text-orange-500' : 'text-neutral-300'
+            )}>
+              {getDisplayTitle(item)}
+            </div>
+            <div className="text-xs text-neutral-500 truncate">
+              {item.wordCount} words • {new Date(item.lastModified).toLocaleDateString()}
+            </div>
+          </div>
+        )}
+        
+        {/* Delete Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(item.id);
+          }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-neutral-600 hover:text-red-500 rounded"
+          title="Delete file"
+          aria-label="Delete file"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
+    );
+  };
+
+  // Recursive component to render items (legacy - keeping for compatibility)
   const renderItem = (item: CryptItem, level: number = 0) => {
     const isActive = currentDocId === item.id;
     const paddingLeft = level * 48; // 48px per level for stronger hierarchy
@@ -164,17 +482,24 @@ export function Sidebar({
             onDrop={(e) => handleDrop(e, item.id)}
             onDragEnd={handleDragEnd}
             className={clsx(
-              'group relative p-3 cursor-pointer transition-all duration-200',
-              'rounded-lg mb-2',
-              'bg-stone-800/60 border-2 border-stone-700/50 border-b-4 border-b-stone-900',
-              'hover:bg-stone-700/70 hover:border-orange-500/40',
-              'shadow-[0_4px_8px_rgba(0,0,0,0.4)]',
+              'group relative p-4 cursor-pointer transition-all duration-300 mb-3',
+              'rounded-lg border-2 backdrop-blur-sm',
+              'bg-gradient-to-br from-amber-950/40 via-amber-900/30 to-amber-950/40',
+              'border-amber-700/50 hover:border-amber-500/60',
+              'shadow-[0_3px_12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]',
+              'hover:shadow-[0_6px_20px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.12)]',
+              'hover:bg-gradient-to-br hover:from-amber-900/50 hover:via-amber-800/40 hover:to-amber-900/50',
               draggedId === item.id && 'opacity-50',
               dragOverId === item.id && dropPosition === 'before' && 'border-t-4 border-t-cyan-500',
               deletingIds.has(item.id) && 'animate-incinerate',
               dragOverId === item.id && dropPosition === 'after' && 'border-b-4 border-b-cyan-500',
               dragOverId === item.id && dropPosition === 'inside' && 'bg-cyan-500/20 border-cyan-500'
             )}
+            style={{
+              // Add leather texture overlay for tome binding feel
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='150' height='150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='5' seed='3' /%3E%3CfeColorMatrix type='saturate' values='0.15'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23leather)' opacity='0.12' fill='%23a0826d'/%3E%3C/svg%3E")`,
+              backgroundSize: '80px 80px',
+            }}
           >
             <div className="flex items-center gap-2">
               {/* Expand/Collapse Icon */}
@@ -205,7 +530,7 @@ export function Sidebar({
                   onUpdateTitle(item.id, e.target.value);
                 }}
                 onClick={(e) => e.stopPropagation()}
-                className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-stone-100 truncate focus:ring-1 focus:ring-orange-500 rounded px-1 -ml-1 font-['Playfair_Display'] tracking-wide"
+                className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-stone-100 truncate focus:ring-1 focus:ring-orange-500 rounded px-1 -ml-1 font-['Crimson_Text'] tracking-wide cursed-translation"
               />
               
               {/* Delete Button */}
@@ -227,26 +552,38 @@ export function Sidebar({
           
           {/* Children */}
           {item.isExpanded && (
-            <div className="ml-2 border-l-2 border-white/5 pl-2 mb-2">
+            <div 
+              className="ml-2 pl-2 mb-2"
+              style={{
+                borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
               {childItems.map((child) => renderItem(child, level + 1))}
               
               {/* The Ghost Slot - Placeholder to add new haunting */}
               <div
-                style={{ paddingLeft: `${(level + 1) * 48}px` }}
                 onClick={() => {
                   onCreateDoc(item.id);
                 }}
                 className={clsx(
                   'group relative p-4 cursor-pointer transition-all duration-300 mb-3',
-                  'rounded-t-2xl rounded-b-sm',
-                  'bg-transparent border-2 border-dashed border-stone-600/50',
-                  'hover:border-orange-500/60 hover:bg-orange-500/10'
+                  'rounded-lg border-2 border-dashed backdrop-blur-sm',
+                  'bg-gradient-to-br from-stone-900/20 via-stone-800/10 to-stone-900/20',
+                  'border-stone-600/40 hover:border-red-500/50',
+                  'hover:bg-gradient-to-br hover:from-red-950/20 hover:via-red-900/10 hover:to-red-950/20',
+                  'hover:shadow-[0_0_15px_rgba(220,38,38,0.2)]'
                 )}
+                style={{
+                  paddingLeft: `${(level + 1) * 48}px`,
+                  // Add ethereal mist texture
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='mist'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='7' /%3E%3CfeColorMatrix type='saturate' values='0.05'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23mist)' opacity='0.15' fill='%23666'/%3E%3C/svg%3E")`,
+                  backgroundSize: '60px 60px',
+                }}
               >
-                <div className="flex items-center justify-center gap-2 text-stone-500 group-hover:text-orange-400 transition-colors">
-                  <Icon icon="solar:add-circle-bold" className="size-5" />
-                  <span className="text-sm font-['Creepster'] tracking-wider">
-                    Summon new haunting here...
+                <div className="flex items-center justify-center gap-2 text-stone-500 group-hover:text-red-400 transition-all duration-300">
+                  <Icon icon="solar:add-circle-bold" className="size-5 group-hover:drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]" />
+                  <span className="text-sm font-['Crimson_Text'] font-semibold tracking-wide group-hover:drop-shadow-[0_0_6px_rgba(220,38,38,0.4)]">
+                    Inscribe new page...
                   </span>
                 </div>
               </div>
@@ -256,11 +593,12 @@ export function Sidebar({
       );
     }
     
-    // Tombstone (Document) - Increased padding
+    // Tombstone (Document) - Enhanced Gothic Manuscript Cards
+    const isNoctuaryMode = mode === 'GRIMOIRE';
+    
     return (
       <div
         key={item.id}
-        style={{ paddingLeft: `${paddingLeft}px` }}
         draggable={!!onReorderItems}
         onDragStart={(e) => handleDragStart(e, item.id)}
         onDragOver={(e) => handleDragOver(e, item.id, 'tombstone')}
@@ -268,99 +606,141 @@ export function Sidebar({
         onDrop={(e) => handleDrop(e, item.id)}
         onDragEnd={handleDragEnd}
         className={clsx(
-          'group relative p-4 cursor-pointer transition-all duration-200 mb-2',
-          'rounded-md',
-          isActive
-            ? 'bg-zinc-900 shadow-lg shadow-purple-500/10'
-            : 'bg-transparent hover:bg-zinc-900/50',
+          'group relative cursor-pointer transition-all duration-300 mb-4',
+          isNoctuaryMode ? (
+            // Noctuary: Ancient manuscript card style
+            clsx(
+              'p-4 rounded-lg border-2 backdrop-blur-sm',
+              'bg-gradient-to-br from-stone-900/40 via-stone-800/30 to-stone-900/40',
+              'border-stone-700/50 hover:border-amber-600/40',
+              'shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]',
+              'hover:shadow-[0_4px_16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1)]',
+              'hover:bg-gradient-to-br hover:from-stone-800/50 hover:via-stone-700/40 hover:to-stone-800/50',
+              isActive && [
+                'border-red-600/60 bg-gradient-to-br from-red-950/30 via-red-900/20 to-red-950/30',
+                'shadow-[0_0_20px_rgba(220,38,38,0.3),0_4px_16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1)]'
+              ]
+            )
+          ) : (
+            // Haunting: Enhanced gothic card style
+            clsx(
+              'p-4 rounded-lg border-2 backdrop-blur-sm',
+              'bg-gradient-to-br from-zinc-900/60 via-zinc-800/40 to-zinc-900/60',
+              'border-zinc-700/50 hover:border-red-600/40',
+              'shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]',
+              'hover:shadow-[0_4px_16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1)]',
+              'hover:bg-gradient-to-br hover:from-zinc-800/70 hover:via-zinc-700/50 hover:to-zinc-800/70',
+              isActive && [
+                'border-red-600/60 bg-gradient-to-br from-red-950/40 via-red-900/30 to-red-950/40',
+                'shadow-[0_0_20px_rgba(220,38,38,0.4),0_4px_16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1)]'
+              ]
+            )
+          ),
           draggedId === item.id && 'opacity-50',
           dragOverId === item.id && dropPosition === 'before' && 'border-t-4 border-t-cyan-500',
           dragOverId === item.id && dropPosition === 'after' && 'border-b-8 border-b-cyan-500',
           deletingIds.has(item.id) && 'animate-incinerate'
         )}
+        style={{
+          paddingLeft: `${paddingLeft}px`,
+          // Add parchment texture overlay for manuscript feel
+          backgroundImage: isNoctuaryMode 
+            ? `url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='4' seed='2' /%3E%3CfeColorMatrix type='saturate' values='0.1'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23parchment)' opacity='0.08' fill='%23d4c8b4'/%3E%3C/svg%3E")`
+            : `url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='stone'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' seed='5' /%3E%3CfeColorMatrix type='saturate' values='0.05'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23stone)' opacity='0.06' fill='%23666'/%3E%3C/svg%3E")`,
+          backgroundSize: '100px 100px',
+        }}
         onClick={() => onSelectDoc(item.id)}
       >
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 mt-1">
+          {/* Active Document Indicator - Subtle and Professional */}
+          <div className="flex-shrink-0 mt-1.5">
             {isActive ? (
-              <Icon
-                icon="solar:ghost-bold"
-                className="size-5 text-purple-400 animate-bounce"
-              />
+              <Skull className="size-4 text-red-600" />
             ) : (
-              <Icon icon="solar:document-text-bold" className="size-5 text-zinc-500" />
+              <div className="w-4 h-4" />
             )}
           </div>
 
           <div className="flex-1 min-w-0">
             <input
               type="text"
-              value={item.title}
+              value={getDisplayTitle(item)}
               onChange={(e) => {
                 e.stopPropagation();
                 onUpdateTitle(item.id, e.target.value);
               }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-transparent border-none outline-none text-sm font-medium text-stone-100 truncate focus:ring-1 focus:ring-orange-500 rounded px-1 -ml-1 font-['Playfair_Display']"
-              style={{ textShadow: '0 2px 4px rgba(0,0,0,0.9)' }}
-            />
-            <div className="space-y-1 mt-1">
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-mono">
-                <span>{item.wordCount} words</span>
-                {item.wordGoal && item.wordGoal > 0 && (
-                  <>
-                    <span>•</span>
-                    <span className="text-purple-400">
-                      {Math.min(Math.round((item.wordCount / item.wordGoal) * 100), 100)}%
-                    </span>
-                  </>
-                )}
-                <span>•</span>
-                <span>
-                  {new Date(item.lastModified).toLocaleDateString()}
-                </span>
-              </div>
-              {item.wordGoal && item.wordGoal > 0 && (
-                <div className="h-1 bg-zinc-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-900 to-purple-500 transition-all duration-300"
-                    style={{
-                      width: `${Math.min((item.wordCount / item.wordGoal) * 100, 100)}%`,
-                    }}
-                  />
-                </div>
+              spellCheck={false}
+              placeholder={mode === 'GRIMOIRE' ? 'Fresh Parchment' : 'Blank Scroll'}
+              className={clsx(
+                "w-full bg-transparent border-none outline-none truncate font-['Crimson_Text'] font-semibold cursed-translation placeholder:italic placeholder:opacity-60 transition-opacity duration-200",
+                isNoctuaryMode 
+                  ? isActive 
+                    ? "text-sm text-red-600 focus:text-red-500 px-0 drop-shadow-[0_0_8px_rgba(220,38,38,0.6)] opacity-100" // Active: blood red with glow
+                    : "text-sm old-brass-text focus:brass-text px-0 opacity-50 hover:opacity-80" // Inactive: faded brass
+                  : isActive
+                    ? "text-sm text-red-600 focus:text-red-500 focus:ring-1 focus:ring-red-700 rounded px-1 -ml-1 drop-shadow-[0_0_8px_rgba(220,38,38,0.6)] opacity-100"
+                    : "text-sm old-brass-text focus:brass-text focus:ring-1 focus:ring-amber-700 rounded px-1 -ml-1 opacity-50 hover:opacity-80"
               )}
-            </div>
+            />
+            {!isNoctuaryMode && (
+              <div className="space-y-1 mt-1">
+                <div className="flex items-center gap-2 text-[10px] text-[#888] font-mono opacity-70">
+                  <span>{item.wordCount} words</span>
+                  {item.wordGoal && item.wordGoal > 0 && (
+                    <>
+                      <span>•</span>
+                      <span className="brass-text">
+                        {Math.min(Math.round((item.wordCount / item.wordGoal) * 100), 100)}%
+                      </span>
+                    </>
+                  )}
+                  <span>•</span>
+                  <span>
+                    {new Date(item.lastModified).toLocaleDateString()}
+                  </span>
+                </div>
+                {item.wordGoal && item.wordGoal > 0 && (
+                  <div className="h-1 bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-red-900 to-red-600 transition-all duration-300"
+                      style={{
+                        width: `${Math.min((item.wordCount / item.wordGoal) * 100, 100)}%`,
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+            {isNoctuaryMode && (
+              <div className="text-[9px] text-[#888] mt-0.5 opacity-70">
+                {item.wordCount} words
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-1">
-            {mode === 'GRIMOIRE' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectDoc(item.id);
-                }}
-                className="opacity-0 group-hover:opacity-100 transition-all p-2 text-zinc-600 hover:text-cyan-400 hover:scale-110 rounded"
-                title="Open in tab"
-                aria-label="Open document"
-              >
-                <GothicIcon variant="arcane" size="xs">
-                  <BookOpen />
-                </GothicIcon>
-              </button>
-            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleDelete(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 transition-all p-2 text-zinc-600 hover:text-red-500 hover:scale-110 rounded"
+              className={clsx(
+                "opacity-0 group-hover:opacity-100 transition-all",
+                isNoctuaryMode
+                  ? "p-1 text-zinc-600 hover:text-red-400"
+                  : "p-2 text-zinc-600 hover:text-red-500 hover:scale-110 rounded"
+              )}
               title="Bury this draft"
               aria-label="Delete document"
             >
-              <GothicIcon variant="blood" size="xs">
-                <Trash2 />
-              </GothicIcon>
+              {isNoctuaryMode ? (
+                <Trash2 className="size-3" />
+              ) : (
+                <GothicIcon variant="blood" size="xs">
+                  <Trash2 />
+                </GothicIcon>
+              )}
             </button>
           </div>
         </div>
@@ -377,20 +757,37 @@ export function Sidebar({
         />
       )}
 
-      {/* Sidebar - The Crypt - Darker, Borderless */}
+      {/* Sidebar - The Crypt - Glass Tint with Border */}
       <div
         className={clsx(
-          'fixed top-0 left-0 h-full w-80 bg-zinc-950 grimoire-texture z-50 transition-transform duration-300',
+          'fixed left-0 w-72 z-50 transition-transform duration-300',
           'flex flex-col',
+          'bg-white/5 backdrop-blur-md',
+          mode === 'GRIMOIRE' ? 'grimoire-texture' : '',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
+        style={{
+          top: 0,
+          bottom: 0,
+          height: '100vh',
+          margin: 0,
+          padding: 0,
+          // Softer book binding border with double-border effect
+          borderRight: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: 'inset -2px 0 4px rgba(0, 0, 0, 0.3), 2px 0 8px rgba(0, 0, 0, 0.5)',
+        }}
       >
         {/* Header */}
-        <div className="p-4 border-b-2 border-stone-700/50 flex items-center justify-between bg-stone-800/40">
+        <div 
+          className="px-4 pb-3 pt-4 flex items-center justify-between bg-transparent"
+          style={{
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
           <div className="flex items-center gap-2">
-            <Icon icon="solar:folder-bold" className="size-5 text-gray-400" />
-            <h2 className="font-['Playfair_Display'] text-xl font-bold text-gray-100 uppercase tracking-wide">
-              The Crypt
+            <Icon icon="solar:book-bold" className="size-5 text-red-400" style={{ filter: 'drop-shadow(0 0 8px rgba(220, 38, 38, 0.5))' }} />
+            <h2 className="gothic-title text-lg uppercase tracking-wider text-stone-200 font-['Playfair_Display']">
+              {mode === 'GRIMOIRE' ? 'Archives' : 'The Crypt'}
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -418,22 +815,40 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Summoning Circle Buttons - Minimal Style */}
-        <div className="p-5 border-b border-zinc-800/50 space-y-2">
-          <button
-            onClick={() => onCreateDoc(null)}
-            className="flex items-center gap-3 text-zinc-400 hover:text-zinc-100 transition-colors w-full py-2"
-          >
-            <Icon icon="solar:add-circle-bold" className="size-5" />
-            <span className="text-sm font-medium">New Tome Page</span>
-          </button>
-          <button
-            onClick={() => onCreateMausoleum()}
-            className="flex items-center gap-3 text-zinc-400 hover:text-zinc-100 transition-colors w-full py-2"
-          >
-            <Icon icon="solar:folder-with-files-bold" className="size-5" />
-            <span className="text-sm font-medium">Build Mausoleum</span>
-          </button>
+        {/* Action Links - Artifact Style */}
+        <div 
+          className="p-4 space-y-3"
+          style={{
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <div className="flex gap-2">
+            <button
+              onClick={() => onCreateDoc(null)}
+              className="group flex items-center gap-2 flex-1 px-2 py-2 text-left transition-all hover:translate-x-1"
+              title="Inscribe new page (Ctrl+N)"
+            >
+              <Feather className="size-4 text-red-400 group-hover:text-red-300 transition-all group-hover:drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
+              <span className="text-sm font-['Crimson_Text'] font-semibold text-stone-300 group-hover:text-red-300 transition-colors group-hover:drop-shadow-[0_0_6px_rgba(220,38,38,0.6)]">
+                New File
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                const newFolderId = onCreateMausoleum('New Folder');
+                if (newFolderId) {
+                  setRenamingId(newFolderId);
+                }
+              }}
+              className="group flex items-center gap-2 flex-1 px-2 py-2 text-left transition-all hover:translate-x-1"
+              title="Create new folder"
+            >
+              <Plus className="size-4 text-amber-600 group-hover:text-amber-500 transition-all group-hover:drop-shadow-[0_0_8px_rgba(217,119,6,0.8)]" />
+              <span className="text-sm font-['Crimson_Text'] font-semibold text-stone-300 group-hover:text-amber-400 transition-colors group-hover:drop-shadow-[0_0_6px_rgba(217,119,6,0.6)]">
+                New Folder
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Documents List - The Catacombs */}
@@ -443,59 +858,93 @@ export function Sidebar({
               The catacombs are empty... for now.
             </div>
           ) : (
-            <div>
-              {rootItems.map((item) => renderItem(item, 0))}
+            <div className="space-y-1">
+              {rootItems.map((item) => (
+                <FileSystemItem key={item.id} item={item} level={0} />
+              ))}
             </div>
           )}
         </div>
 
-        {/* Project Total Summary */}
-        <div className="border-t-2 border-stone-700/50 p-4 bg-stone-800/40">
-          <div className="text-center space-y-2">
-            <p className="text-xs text-gray-500 font-mono uppercase tracking-widest">
-              PROJECT TOTAL
-            </p>
-            <div className="font-['Creepster'] text-3xl text-orange-500 drop-shadow-[0_2px_8px_rgba(249,115,22,0.6)]">
-              {totalProjectWords.toLocaleString()}
-            </div>
-            <p className="text-xs text-gray-500 font-mono uppercase">
-              WORDS
-            </p>
+        {/* Bottom Actions - Diegetic Controls */}
+        {mode === 'GRIMOIRE' && (onExport || onShowHelp) && (
+          <div 
+            className="p-4 space-y-2"
+            style={{
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            {onExport && currentDocId && (
+              <button
+                onClick={onExport}
+                className="group flex items-center gap-3 text-slate-300 hover:text-amber-400 transition-all duration-200 w-full py-2 hover:translate-x-1"
+              >
+                <Icon icon="solar:document-bold" className="size-5" />
+                <span className="text-sm font-['Crimson_Text'] font-semibold">Seal & Export</span>
+              </button>
+            )}
+            {onShowHelp && (
+              <button
+                onClick={onShowHelp}
+                className="group flex items-center gap-3 text-slate-300 hover:text-red-400 transition-all duration-200 w-full py-2 hover:translate-x-1"
+              >
+                <Icon icon="solar:question-circle-bold" className="size-5" />
+                <span className="text-sm font-['Crimson_Text'] font-semibold">Arcane Gestures</span>
+              </button>
+            )}
           </div>
+        )}
 
-          {/* Project Goal Progress */}
-          {(() => {
-            const totalGoal = items.reduce((sum, item) => sum + (item.wordGoal || 0), 0);
-            if (totalGoal > 0) {
-              const progress = Math.min((totalProjectWords / totalGoal) * 100, 100);
-              return (
-                <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-gray-500 uppercase">Project Goal</span>
-                    <span className="text-purple-400 font-bold">{Math.round(progress)}%</span>
-                  </div>
-                  <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-purple-900 to-purple-500 transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <div className="text-center text-xs text-gray-600 font-mono">
-                    {totalGoal.toLocaleString()} words goal
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          })()}
-
-          <div className="mt-3 pt-3 border-t border-white/5 text-center">
-            <p className="text-xs text-gray-600 font-mono uppercase tracking-wider">
-              {items.filter((i) => i.type === 'tombstone').length} Hauntings • {items.filter((i) => i.type === 'mausoleum').length} Mausoleums
-            </p>
-          </div>
-        </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-[60]" 
+            onClick={closeContextMenu}
+          />
+          <div
+            className="fixed z-[70] bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl py-2 min-w-[160px]"
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y,
+            }}
+          >
+            {contextMenu.itemType === 'folder' && (
+              <>
+                <button
+                  onClick={() => handleContextAction('newFile', contextMenu.itemId)}
+                  className="w-full px-4 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white flex items-center gap-2"
+                >
+                  <Feather className="w-4 h-4" />
+                  New File Inside...
+                </button>
+                <button
+                  onClick={() => handleContextAction('newFolder', contextMenu.itemId)}
+                  className="w-full px-4 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white flex items-center gap-2"
+                >
+                  <Folder className="w-4 h-4" />
+                  New Folder Inside...
+                </button>
+                <div className="border-t border-neutral-700 my-1" />
+              </>
+            )}
+            <button
+              onClick={() => handleContextAction('rename', contextMenu.itemId)}
+              className="w-full px-4 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
+              Rename
+            </button>
+            <button
+              onClick={() => handleContextAction('delete', contextMenu.itemId)}
+              className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300"
+            >
+              Delete
+            </button>
+          </div>
+        </>
+      )}
     </>
   );
 }

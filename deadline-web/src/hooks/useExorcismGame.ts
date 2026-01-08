@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getRandomBossSentence } from '@/data/horrorWords';
 
 type GameState = 'IDLE' | 'PLAYING' | 'GAME_OVER';
 
@@ -8,6 +9,7 @@ interface ActiveEntity {
   typedPhrase: string;
   position: number; // 0-100, where 100 is the player
   speed: number;
+  isBoss: boolean;
 }
 
 // Latin/spooky phrases for the exorcism
@@ -24,12 +26,23 @@ const EXORCISM_PHRASES = [
   'REQUIESCAT IN PACE',
 ];
 
+const BOSS_SPAWN_INTERVAL = 15; // Boss spawns every 15 kills
+const BOSS_SPEED_MULTIPLIER = 0.6; // Bosses move 40% slower
+const BOSS_SANITY_DAMAGE = 30; // Bosses deal more damage
+const REGULAR_SANITY_DAMAGE = 20;
+const BOSS_POINTS_MULTIPLIER = 3; // Bosses give 3x points
+const BOSS_MANA_BONUS = 25; // Bonus mana for defeating a boss
+
 export function useExorcismGame() {
   const [gameState, setGameState] = useState<GameState>('IDLE');
   const [playerSanity, setPlayerSanity] = useState(100);
   const [score, setScore] = useState(0);
   const [wave, setWave] = useState(1);
+  const [killCount, setKillCount] = useState(0);
+  const [mana, setMana] = useState(0);
   const [activeEntity, setActiveEntity] = useState<ActiveEntity | null>(null);
+  const [isBossActive, setIsBossActive] = useState(false);
+  const [streak, setStreak] = useState(0);
   const gameLoopRef = useRef<number | null>(null);
   const lastTickRef = useRef<number>(Date.now());
 
@@ -38,18 +51,33 @@ export function useExorcismGame() {
     return 0.5 + (waveNum * 0.2); // Increases by 0.2 per wave
   };
 
+  // Check if next spawn should be a boss
+  const shouldSpawnBoss = useCallback(() => {
+    return killCount > 0 && killCount % BOSS_SPAWN_INTERVAL === 0;
+  }, [killCount]);
+
   // Spawn a new entity
   const spawnEntity = useCallback(() => {
-    const randomPhrase = EXORCISM_PHRASES[Math.floor(Math.random() * EXORCISM_PHRASES.length)];
+    const isBoss = shouldSpawnBoss();
+    const phrase = isBoss 
+      ? getRandomBossSentence().toUpperCase()
+      : EXORCISM_PHRASES[Math.floor(Math.random() * EXORCISM_PHRASES.length)];
+    
+    const baseSpeed = getSpeedForWave(wave);
+    const speed = isBoss ? baseSpeed * BOSS_SPEED_MULTIPLIER : baseSpeed;
+    
     const newEntity: ActiveEntity = {
       id: crypto.randomUUID(),
-      phrase: randomPhrase,
+      phrase,
       typedPhrase: '',
       position: 0,
-      speed: getSpeedForWave(wave),
+      speed,
+      isBoss,
     };
+    
     setActiveEntity(newEntity);
-  }, [wave]);
+    setIsBossActive(isBoss);
+  }, [wave, shouldSpawnBoss]);
 
   // Game loop
   useEffect(() => {
@@ -78,16 +106,18 @@ export function useExorcismGame() {
 
         // Collision check - entity reached the player
         if (newPosition >= 100) {
-          // Reduce sanity
+          // Reduce sanity based on entity type
+          const damage = current.isBoss ? BOSS_SANITY_DAMAGE : REGULAR_SANITY_DAMAGE;
           setPlayerSanity((prev) => {
-            const newSanity = Math.max(0, prev - 20);
+            const newSanity = Math.max(0, prev - damage);
             if (newSanity <= 0) {
               setGameState('GAME_OVER');
             }
             return newSanity;
           });
           
-          // Clear entity (will spawn new one next tick)
+          // Clear entity and boss flag
+          setIsBossActive(false);
           return null;
         }
 
@@ -115,7 +145,11 @@ export function useExorcismGame() {
     setPlayerSanity(100);
     setScore(0);
     setWave(1);
+    setKillCount(0);
+    setMana(0);
+    setStreak(0);
     setActiveEntity(null);
+    setIsBossActive(false);
     lastTickRef.current = Date.now();
   }, []);
 
@@ -123,24 +157,51 @@ export function useExorcismGame() {
   const handleTyping = useCallback((char: string) => {
     if (gameState !== 'PLAYING' || !activeEntity) return;
 
-    const nextChar = activeEntity.phrase[activeEntity.typedPhrase.length];
+    let nextChar = activeEntity.phrase[activeEntity.typedPhrase.length];
+    
+    // Auto-skip spaces - if next character is a space, advance automatically
+    let newTypedPhrase = activeEntity.typedPhrase;
+    while (nextChar === ' ') {
+      newTypedPhrase = newTypedPhrase + ' ';
+      nextChar = activeEntity.phrase[newTypedPhrase.length];
+    }
     
     // Check if character matches (case-insensitive)
     if (char.toUpperCase() === nextChar) {
-      const newTypedPhrase = activeEntity.typedPhrase + nextChar;
+      newTypedPhrase = newTypedPhrase + nextChar;
+      
+      // Play typing sound
+      // Audio removed with Verbum Dei
+      
+      // Increment streak on correct character
+      setStreak((prev) => prev + 1);
       
       // Check if phrase is complete
       if (newTypedPhrase === activeEntity.phrase) {
         // Success! Banish the entity
-        setScore((prev) => prev + activeEntity.phrase.length * 10);
+        // Audio removed with Verbum Dei
+        
+        const basePoints = activeEntity.phrase.length * 10;
+        const points = activeEntity.isBoss ? basePoints * BOSS_POINTS_MULTIPLIER : basePoints;
+        setScore((prev) => prev + points);
+        
+        // Increment kill count
+        setKillCount((prev) => prev + 1);
+        
+        // Award mana
+        const manaGain = activeEntity.isBoss 
+          ? BOSS_MANA_BONUS 
+          : Math.floor(activeEntity.phrase.length / 3);
+        setMana((prev) => Math.min(100, prev + manaGain));
         
         // Check if wave should increase (every 5 entities)
-        if ((score + activeEntity.phrase.length * 10) % 500 === 0) {
+        if ((score + points) % 500 === 0) {
           setWave((prev) => prev + 1);
         }
         
-        // Clear entity (will spawn new one)
+        // Clear entity and boss flag
         setActiveEntity(null);
+        setIsBossActive(false);
       } else {
         // Update typed phrase
         setActiveEntity({
@@ -149,7 +210,17 @@ export function useExorcismGame() {
         });
       }
     } else {
-      // Wrong character - small sanity penalty
+      // Wrong character - play damage sound
+      // Audio removed with Verbum Dei
+      
+      // Reset streak, reset progress on boss, small sanity penalty
+      setStreak(0);
+      if (activeEntity.isBoss) {
+        setActiveEntity({
+          ...activeEntity,
+          typedPhrase: '',
+        });
+      }
       setPlayerSanity((prev) => Math.max(0, prev - 2));
     }
   }, [gameState, activeEntity, score]);
@@ -159,7 +230,11 @@ export function useExorcismGame() {
     playerSanity,
     score,
     wave,
+    killCount,
+    mana,
+    streak,
     activeEntity,
+    isBossActive,
     startGame,
     handleTyping,
   };

@@ -17,7 +17,7 @@ export function HauntingEditor() {
   const {
     gameState,
     patience,
-    patienceCritical,
+
     currentPart,
     currentLevelId,
     sentenceIndex,
@@ -42,9 +42,7 @@ export function HauntingEditor() {
   const [whisperMessage, setWhisperMessage] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showErrorFlash, setShowErrorFlash] = useState(false);
-  const [showSentenceComplete, setShowSentenceComplete] = useState(false);
-  const [patienceBoost, setPatienceBoost] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const whisperMessages = ['GIVE UP', 'TOO SLOW', 'FAIL', 'STOP', 'YOU CANNOT', 'SURRENDER'];

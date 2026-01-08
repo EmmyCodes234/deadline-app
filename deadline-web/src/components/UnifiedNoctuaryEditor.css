@@ -1,0 +1,200 @@
+/**
+ * UnifiedNoctuaryEditor Styles
+ * Layout and focus mode transitions
+ * Horror theme with subtle parchment texture - Requirements 10.1, 10.4
+ */
+
+.unified-noctuary-editor {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  min-height: 100vh;
+  /* Dark color scheme with subtle parchment texture */
+  background: 
+    linear-gradient(
+      to bottom,
+      rgba(20, 16, 12, 0.95),
+      rgba(28, 24, 20, 0.95)
+    ),
+    url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' seed='2' /%3E%3CfeColorMatrix type='saturate' values='0.1'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23parchment)' opacity='0.04' fill='%23d4c8b4'/%3E%3C/svg%3E");
+  background-size: auto, 150px 150px;
+  background-attachment: scroll, fixed;
+  /* IM Fell English and Crimson Text fonts */
+  font-family: 'IM Fell English', 'Crimson Text', Georgia, serif;
+  position: relative;
+}
+
+/* Cursor hidden state */
+.unified-noctuary-editor.cursor-hidden {
+  cursor: none;
+}
+
+.unified-noctuary-editor.cursor-hidden * {
+  cursor: none !important;
+}
+
+/* Sidebar container */
+.sidebar-container {
+  position: relative;
+  z-index: 50;
+  will-change: opacity;
+}
+
+.sidebar-container.focus-mode {
+  pointer-events: auto;
+}
+
+/* Restore full opacity on hover during focus mode */
+.sidebar-container.focus-mode:hover {
+  opacity: 1 !important;
+  transition: opacity 200ms ease-in-out;
+}
+
+/* Editor container */
+.editor-container {
+  position: relative;
+  z-index: 10;
+  overflow-y: auto;
+  min-width: 0; /* Prevent grid blowout */
+}
+
+/* Metadata container */
+.metadata-container {
+  position: relative;
+  z-index: 50;
+  width: 320px;
+  overflow-y: auto;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  will-change: opacity;
+  /* Paper grain texture overlay */
+  background-image: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.2' numOctaves='4' seed='5' /%3E%3CfeColorMatrix type='saturate' values='0.1'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23grain)' opacity='0.06' fill='%23e8dcc8'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.metadata-container.focus-mode {
+  pointer-events: auto;
+}
+
+/* Restore full opacity on hover during focus mode */
+.metadata-container.focus-mode:hover {
+  opacity: 1 !important;
+  transition: opacity 200ms ease-in-out;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .unified-noctuary-editor {
+    grid-template-columns: auto 1fr;
+  }
+
+  .metadata-container {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .unified-noctuary-editor {
+    grid-template-columns: 1fr;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+  }
+
+  /* Show mobile menu button */
+  .mobile-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Hide sidebar by default on mobile */
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 300ms ease-in-out;
+  }
+
+  /* Show sidebar when open */
+  .sidebar-container.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Hide metadata panel on mobile */
+  .metadata-container {
+    display: none;
+  }
+
+  /* Ensure touch-friendly button sizes (minimum 44x44px) */
+  button,
+  .tag-item,
+  .tag-remove,
+  .word-goal-clear,
+  input[type="submit"],
+  input[type="button"],
+  [role="button"] {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px;
+  }
+
+  /* Adjust smaller interactive elements */
+  .tag-submit,
+  .word-goal-submit {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Ensure document list items are touch-friendly */
+  .document-item,
+  .folder-item {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+
+  /* Make search input touch-friendly */
+  input[type="text"],
+  input[type="search"],
+  input[type="number"],
+  textarea {
+    min-height: 44px;
+    padding: 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  /* Adjust icon buttons */
+  button svg,
+  [role="button"] svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Adjust editor container for mobile menu button */
+  .editor-container {
+    padding-top: 60px;
+  }
+}
+
+/* Mobile menu button */
+.mobile-menu-button {
+  display: none;
+}
+
+/* Smooth transitions for focus mode */
+.sidebar-container,
+.metadata-container {
+  transition: opacity 300ms ease-in-out;
+}
+
+/* Ensure non-essential UI elements are hidden during focus */
+.unified-noctuary-editor[data-editor-focused="true"] .save-status {
+  opacity: 0.5;
+  transition: opacity 300ms ease-in-out;
+}
+
+.unified-noctuary-editor[data-editor-focused="true"] .save-status:hover {
+  opacity: 1;
+}
